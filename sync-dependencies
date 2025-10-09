@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run locally only (not on Acquia Cloud and not on CI)
+if [ -z "${AH_SITE_ENVIRONMENT:-}" ] && [ -z "${CI:-}" ]; then
+  SOURCE="docroot/profiles/contrib/webspark/sample-webspark-dependencies/"
+  DEST="webspark-dependencies/"
+
+  echo "Starting dependency sync..."
+
+  # Ensure destination exists.
+  if [[ ! -d "$DEST" ]]; then
+    echo "Destination directory does not exist. Creating now."
+    mkdir -p "$DEST"
+  fi
+
+  # Sync using rsync.
+  rsync -avq --delete "$SOURCE" "$DEST"
+
+  # Replace namespaces inside all PHP files.
+  find "$DEST" -type f -name "*.php" \
+    -exec sed -i 's/namespace SampleWebsparkCustomScripts;/namespace WebsparkCustomScripts;/g' {} \;
+
+  echo "Webspark dependencies directory synced successfully."
+fi

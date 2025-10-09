@@ -1,0 +1,16 @@
+components-library:
+  version: 2.16.2
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+  js:
+    node_modules/@asu/component-header-footer/dist/asuHeaderFooter.umd.js: {}
+    js/asu_brand.header.js: {}
+  css:
+    component:
+      css/asu_brand.header.css: {}
+block__system_main_block:
+  css:
+    theme:
+      css/asu-brand-edit-form.css: {}
