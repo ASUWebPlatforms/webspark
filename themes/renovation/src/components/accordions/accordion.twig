@@ -1,0 +1,54 @@
+{{ attach_library('renovation/accordions') }}
+{% set is_icon = content.field_icon|render %}
+{% set link_id = paragraph.id() %}
+
+<div class="accordion-item mt-3 {{ color != 'default' ? color }}">
+  <div class="accordion-header {{ is_icon ? 'accordion-header-icon' }}">
+    <h4>
+      <button id="accordion-header-{{ link_id|lower }}"
+        {% if expanded is same as('On') %}
+          class=""
+        {% else %}
+          class="collapsed"
+        {% endif %}
+         href="#accordion-content-{{ link_id|lower }}"
+         data-bs-toggle="collapse"
+         role="button"
+         {% if expanded is same as('On') %}
+           aria-expanded="true"
+         {% else %}
+           aria-expanded="false"
+         {% endif %}
+         aria-controls="accordion-content-{{ link_id|lower }}"
+         data-ga-event="collapse"
+         data-ga-action="open"
+         data-ga-name="onclick"
+         data-ga-type="click"
+         data-ga-section="accordion block"
+         data-ga-region="main content"
+         data-ga-text="{{ heading }}">
+        {# If there is an icon print it else print header only. #}
+        {% if is_icon %}
+          <span class="accordion-icon">
+            <i class="{{ content.field_icon[0]['#icons'][0]['#style'] }} {{ content.field_icon[0]['#icons'][0]['#name'] }} me-2" role="img" aria-label="..."></i>
+            {{ heading }}
+          </span>
+        {% else %}
+          {{ heading }}
+        {% endif %}
+        <span class="fas fa-chevron-up"></span>
+      </button>
+    </h4>
+  </div>
+  <div id="accordion-content-{{ link_id }}"
+    {% if expanded is same as('On') %}
+       class="collapse show"
+    {% else %}
+       class="collapse"
+    {% endif %}
+     data-bs-parent="#accordion-{{ parent_id }}">
+    <div class="accordion-body">
+      {{ body_text  }}
+    </div>
+  </div>
+</div>
