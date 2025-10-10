@@ -3,3 +3,6 @@ node_modules/*
 !node_modules/@asu
 /node_modules/@asu/*
 !/node_modules/@asu/unity-bootstrap-theme
+/node_modules/@asu/unity-bootstrap-theme/*
+!/node_modules/@asu/unity-bootstrap-theme/dist
+!/node_modules/@asu/unity-bootstrap-theme/src
