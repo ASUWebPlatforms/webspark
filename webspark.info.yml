@@ -9,8 +9,6 @@ install:
   # Webspark.
   # TODO: Determine which modules should be dependencies instead (ex: node, block, layout_builder)
   # https://www.drupal.org/docs/develop/managing-a-drupalorg-theme-module-or-distribution-project/creating-distributions/how-to-write-a-drupal-installation-profile#s-infoyml-file
-  - acsf
-  - acsf_duplication
   - allowed_formats
   - asu_brand
   - asu_components_appearance
