@@ -1,0 +1,73 @@
+{
+    "name": "asuwebplatforms/webspark",
+    "description": "ASU Webspark Drupal Profile",
+    "type": "drupal-profile",
+    "license": "MIT",
+    "require": {
+        "jquery/select2": "*",
+        "fontawesome/fontawesome": "*",
+        "northernco/ckeditor5-anchor-drupal": "*",
+        "fonticonpicker/fonticonpicker": "*"
+    },
+    "repositories": {
+        "fontawesome": {
+            "type": "package",
+            "package": {
+                "name": "fontawesome/fontawesome",
+                "version": "6.4.2",
+                "type": "drupal-library",
+                "extra": {
+                    "installer-name": "fontawesome"
+                },
+                "dist": {
+                    "url": "https://use.fontawesome.com/releases/v6.4.2/fontawesome-free-6.4.2-web.zip",
+                    "type": "zip"
+                }
+            }
+        },
+        "ckeditor5_anchor_drupal": {
+            "type": "package",
+            "package": {
+                "name": "northernco/ckeditor5-anchor-drupal",
+                "version": "0.4.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://registry.npmjs.org/@northernco/ckeditor5-anchor-drupal/-/ckeditor5-anchor-drupal-0.4.0.tgz",
+                    "type": "tar"
+                }
+            }
+        },
+        "jquery.select2": {
+            "type": "package",
+            "package": {
+                "name": "jquery/select2",
+                "version": "4.0.13",
+                "type": "drupal-library",
+                "extra": {
+                    "installer-name": "jquery.select2"
+                },
+                "dist": {
+                    "url": "https://github.com/select2/select2/archive/refs/tags/4.0.13.zip",
+                    "type": "zip"
+                },
+                "license": "MIT"
+            }
+        },
+        "fonticonpicker": {
+            "type": "package",
+            "package": {
+                "name": "fonticonpicker/fonticonpicker",
+                "version": "3.1.1",
+                "type": "drupal-library",
+                "extra": {
+                    "installer-name": "fonticonpicker--fonticonpicker"
+                },
+                "dist": {
+                    "url": "https://github.com/fontIconPicker/fontIconPicker/archive/refs/tags/v3.1.1.tar.gz",
+                    "type": "tar"
+                },
+                "license": "MIT"
+            }
+        }
+    }
+}
