@@ -1,7 +1,7 @@
 {% if url is not empty %}
   <a
     href="{{ url }}"
-    class="btn {{ button_color }}"
+    class="{{ button_color|join(' ') }}"
     target="{{ target }}"
     data-ga-event="link"
     data-ga-action="click"
