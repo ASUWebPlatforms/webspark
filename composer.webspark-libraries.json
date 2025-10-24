@@ -7,7 +7,7 @@
         "jquery/select2": "*",
         "fontawesome/fontawesome": "*",
         "northernco/ckeditor5-anchor-drupal": "*",
-        "fonticonpicker/fonticonpicker": "*"
+        "npm-asset/fonticonpicker--fonticonpicker": "3.1.1"
     },
     "repositories": {
         "fontawesome": {
@@ -49,22 +49,6 @@
                 "dist": {
                     "url": "https://github.com/select2/select2/archive/refs/tags/4.0.13.zip",
                     "type": "zip"
-                },
-                "license": "MIT"
-            }
-        },
-        "fonticonpicker": {
-            "type": "package",
-            "package": {
-                "name": "fonticonpicker/fonticonpicker",
-                "version": "3.1.1",
-                "type": "drupal-library",
-                "extra": {
-                    "installer-name": "fonticonpicker--fonticonpicker"
-                },
-                "dist": {
-                    "url": "https://github.com/fontIconPicker/fontIconPicker/archive/refs/tags/v3.1.1.tar.gz",
-                    "type": "tar"
                 },
                 "license": "MIT"
             }
