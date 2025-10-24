@@ -7,7 +7,8 @@
         "jquery/select2": "*",
         "fontawesome/fontawesome": "*",
         "northernco/ckeditor5-anchor-drupal": "*",
-        "npm-asset/fonticonpicker--fonticonpicker": "3.1.1"
+        "npm-asset/fonticonpicker--fonticonpicker": "3.1.1",
+        "npm-asset/select2":  "4.1.0-RC.0"
     },
     "repositories": {
         "fontawesome": {

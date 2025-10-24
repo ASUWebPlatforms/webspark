@@ -5,7 +5,6 @@
     "license": "MIT",
     "require": {
         "asuwebplatforms/asu_governance":  "1.0.9",
-        "composer/installers":  "v2.0.0",
         "cweagans/composer-patches":  "1.7.3",
         "drupal/admin_toolbar":  "3.6.1",
         "drupal/allowed_formats":  "3.0.1",
@@ -58,20 +57,23 @@
         "drupal/webform":  "6.2.3",
         "drush-ops/behat-drush-endpoint":  "9.4.1",
         "drush/drush":  "12.5.3",
-        "fontawesome/fontawesome":  "6.4.2",
-        "northernco/ckeditor5-anchor-drupal":  "0.4.0",
-        "npm-asset/fonticonpicker--fonticonpicker":  "3.1.1",
-        "npm-asset/select2":  "4.1.0-RC.0",
         "oomphinc/composer-installers-extender":  "2.0.1",
         "php":  ">=8.3.0",
-        "zaporylie/composer-drupal-optimizations":  "1.2.0"
+        "zaporylie/composer-drupal-optimizations":  "1.2.0",
+        "purge",
+        "purge_ui",
+        "purge_drush",
+        "purge_queuer_core_tags",
+        "purge_processor_cron",
+        "purge_processor_late_runtime",
+        "acquia_purge"
     },
     "config": {
         "sort-packages": true
     },
     "extra": {
         "enable-patching": true,
-        "patches-file": "composer.webspark-libraries.json",
+        "patches-file": "patches.webspark.json",
         "composer-exit-on-patch-failure": true,
         "patchLevel": {
             "drupal/core": "-p2"
