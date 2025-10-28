@@ -65,58 +65,5 @@
     "config": {
         "sort-packages": true
     },
-    "extra": {
-        "enable-patching": true,
-        "patches-file": "patches.webspark.json",
-        "composer-exit-on-patch-failure": true,
-        "patchLevel": {
-            "drupal/core": "-p2"
-        },
-        "installer-paths": {
-            "docroot/core": [
-                "type:drupal-core"
-            ],
-            "docroot/libraries/{$name}": [
-                "type:drupal-library"
-            ],
-            "docroot/modules/composer/{$name}": [
-                "type:drupal-module"
-            ],
-            "docroot/profiles/composer/{$name}": [
-                "type:drupal-profile"
-            ],
-            "docroot/themes/composer/{$name}": [
-                "type:drupal-theme"
-            ],
-            "drush/Commands/contrib/{$name}": [
-                "type:drupal-drush"
-            ],
-            "docroot/modules/custom/{$name}": [
-                "type:drupal-custom-module"
-            ],
-            "docroot/profiles/custom/{$name}": [
-                "type:drupal-custom-profile"
-            ],
-            "docroot/themes/custom/{$name}": [
-                "type:drupal-custom-theme"
-            ],
-            "docroot/libraries/ckeditor/plugins/{$name}": [
-                "vendor:ckeditor-plugin"
-            ]
-        },
-        "drupal-scaffold": {
-            "locations": {
-                "web-root": "./docroot"
-            },
-            "file-mapping": {
-                "[project-root]/.editorconfig": false,
-                "[project-root]/.gitattributes": false,
-                "[web-root]/robots.txt": false
-            }
-        },
-        "build-env": {
-            "export-configuration": "drush config-export --yes"
-        }
-    },
     "version": "2.16.0"
 }
