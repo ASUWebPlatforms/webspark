@@ -1,9 +1,9 @@
 <?php
 
-namespace WebsparkCustomScripts;
+namespace SampleWebsparkCustomScripts;
 
-use Composer\Script\Event;
 use Composer\Plugin\PreCommandRunEvent;
+use Composer\Script\Event;
 
 class CustomComposerScripts
 {

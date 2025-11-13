@@ -5,7 +5,7 @@ set -e
 if [[ -n "$AH_SITE_ENVIRONMENT" || -n "$CI" ]]; then
   echo "Detected CI or Acquia Cloud environment."
 
-  if [[ -f "custom-dependencies/scripts/ComposerScripts.php" || -f "custom-dependencies/scripts/CustomComposerScripts.php" ]]; then
+  if [[ -f "webspark-dependencies/scripts/ComposerScripts.php" || -f "webspark-dependencies/scripts/CustomComposerScripts.php" ]]; then
     echo "Including webspark composer scripts for CI build..."
   else
     echo "Skipping webspark autoload entry in CI — file not found."

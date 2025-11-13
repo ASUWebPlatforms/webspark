@@ -7,7 +7,7 @@
  * Custom Composer scripts and implementations of Composer hooks.
  */
 
-namespace WebsparkCustomScripts;
+namespace SampleWebsparkCustomScripts;
 
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Script\Event;
@@ -95,7 +95,7 @@ class ComposerScripts {
     $originalComposerJson = $composerJson;
 
     // add our post-update-cmd hook if it's not already present
-    $our_hook = 'WebsparkCustomScripts\\ComposerScripts::postUpdate';
+    $our_hook = 'scripts\\ComposerScripts::postUpdate';
     // if does not exist, add as an empty arry
     if(! isset($composerJson['scripts']['post-update-cmd'])) {
       $composerJson['scripts']['post-update-cmd'] = [];

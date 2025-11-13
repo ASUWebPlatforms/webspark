@@ -11,9 +11,17 @@ ddev composer require asuwebplatforms/webspark:^2.17.0 wikimedia/composer-merge-
 ```
 
 ## Add custom-dependencies directory (if it doesn't exist)
-If your repository does not already have a `custom-dependencies` directory at the root level, you will need to create it. You can do so by copying the `sample-custom-dependencies` directory from this profile and pasting it into the root of your repository. Then rename the copied directory from `sample-custom-dependencies` to `custom-dependencies`. If you already have a `custom-dependencies` directory, you should ensure that it matches what is in the `sample-custom-dependencies` directory, making adjustments as necessary.
+If your repository does not already have a `custom-dependencies` directory at the root level, you will need to create it. You can do so by copying the `sample-custom-dependencies` directory from this profile and pasting it into the root of your repository. Then, rename the copied directory from `sample-custom-dependencies` to `custom-dependencies`. If you already have a `custom-dependencies` directory, you should ensure that its contents include everything that is in the `sample-custom-dependencies` directory, making adjustments as necessary.
 
 For more information about the `custom-dependencies` folder and its purpose, please refer to the README file located within that directory.
+
+## Add webspark-dependencies directory
+- If your repository contains an `upstream-configration` directory at the root level, you will need to delete it.
+- Copy the `sample-webdspark-dependencies` directory from this profile and paste it into the root of your repository.
+- Rename the copied directory from `sample-webspark-dependencies` to `webspark-dependencies`.
+- Edit the namespace declarations in the two PHP files within the `scripts` directory to be `WebsparkCustomScripts` instead of `SampleWebsparkCustomScripts` and save them.
+
+For more information about the `webspark-dependencies` folder and its purpose, please refer to the README file located within that directory.
 
 ## Adjust your composer.json
 You will need to adjust your root `composer.json` file to ONLY have three items in its `require` section, as seen below. To accomplish this, you will need to move some items to the new `custom-dependencies` folder as described in the next section.
