@@ -11,13 +11,14 @@ ddev composer require asuwebplatforms/webspark:^2.17.0 wikimedia/composer-merge-
 ```
 
 ## Add custom-dependencies directory (if it doesn't exist)
-If your repository does not already have a `custom-dependencies` directory at the root level, you will need to create it. You can do so by copying the `sample-custom-dependencies` directory from this profile and pasting it into the root of your repository. Then, rename the copied directory from `sample-custom-dependencies` to `custom-dependencies`. If you already have a `custom-dependencies` directory, you should ensure that its contents include everything that is in the `sample-custom-dependencies` directory, making adjustments as necessary.
+- If your repository does not already have a `custom-dependencies` directory at the root level, you will need to create it. You can do so by copying the `sample-custom-dependencies` directory from this profile and pasting it into the root of your repository. Then, rename the copied directory from `sample-custom-dependencies` to `custom-dependencies`. 
+- If you already have a `custom-dependencies` directory, you should ensure that its contents include everything that is in the `sample-custom-dependencies` directory, making adjustments as necessary.
 
 For more information about the `custom-dependencies` folder and its purpose, please refer to the README file located within that directory.
 
 ## Add webspark-dependencies directory
-- If your repository contains an `upstream-configration` directory at the root level, you will need to delete it.
-- Copy the `sample-webdspark-dependencies` directory from this profile and paste it into the root of your repository.
+- If your repository contains an `upstream-configuration` directory at the root level, you will need to delete it. This directory is no longer needed with the newly consolidated webspark profile (as of Webspark 2.17.0).
+- Copy the `sample-webspark-dependencies` directory from this profile and paste it into the root of your repository.
 - Rename the copied directory from `sample-webspark-dependencies` to `webspark-dependencies`.
 - Edit the namespace declarations in the two PHP files within the `scripts` directory to be `WebsparkCustomScripts` instead of `SampleWebsparkCustomScripts` and save them.
 
@@ -34,18 +35,18 @@ You will need to adjust your root `composer.json` file to ONLY have three items 
 ```
 
 ## Move non-Webspark composer packages to the custom-dependencies composer.json file
-Any items other than the three indicated above in the `require` section will need to be moved into the appropriate `composer.json` file in the `custom-dependencies` folder, being careful not to duplicate items that are in the webspark profile's `composer.json` file (which should be at `docroot/profiles/contrib/webspark/composer.json`).
+- The `composer.json` file at the root of your repository needs to be adjusted. Compare it with the version located in `docroot/profiles/contrib/webspark/composer.json` and remove any of the items that exist in that file from the root `composer.json` file. 
+- Any remaining items, other than the three indicated above in the `require` section, will need to be moved into the appropriate `composer.json` file in the `custom-dependencies` folder.
 
 ## Prepare patch files
-The `composer.patches.json` file at the root of your repository needs to be adjusted. Compare it with the version located in `docroot/profiles/contrib/webspark/patches.webspark.json` and remove any of the items that exist in that file from the root `composer.patches.json` file.
-
-Then, take what is remaining and compare it with what exists in `custom-dependencies/patches.custom.json`. After making sure that the `custom-dependencies/patches.custom.json` file contains all of the patches unique to your site, you can delete the items from within the root `composer.patches.json` file, leaving only an empty set of curly braces like this:
+- The `composer.patches.json` file at the root of your repository needs to be adjusted. Compare it with the version located in `docroot/profiles/contrib/webspark/patches.webspark.json` and remove any of the items that exist in that file from the root `composer.patches.json` file. 
+- Then, take what is remaining and compare it with what exists in `custom-dependencies/patches.custom.json`. After making sure that the `custom-dependencies/patches.custom.json` file contains all of the patches unique to your site, you can delete the items from within the root `composer.patches.json` file, leaving only an empty set of curly braces like this:
 `{}`.
 
 From this point on, the root `composer.patches.json` file will be dynamically populated via a composer script that combines the patches in your custom-dependencies `patches.custom.json` file and the webspark profile's `patches.webspark.json` file when you run `composer update` or `composer install`.
 
 ## Update your root composer.json's extra, autoload, scripts, and repositories sections
-For the Webspark profile to work properly, you will need to ensure that the following sections in your root `composer.json` file minimally include the following items:
+For the Webspark profile to work properly, you will need to ensure that the following sections in your root `composer.json` file include the following items, at a minimum:
 
 ```json
      "extra": {
@@ -200,8 +201,6 @@ For the Webspark profile to work properly, you will need to ensure that the foll
         },
     ]
 ```
-## Delete upstream-configuration directory (if it exists)
-If your existing Webspark repository has an `upstream-configuration` directory at the root level, delete it. This directory is no longer needed with the newly consolidated webspark profile (as of Webspark 2.17.0).
 
 ## Update composer
 
