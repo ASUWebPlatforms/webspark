@@ -4,7 +4,7 @@
     "type": "drupal-profile",
     "license": "MIT",
     "require": {
-        "asuwebplatforms/asu_governance":  "1.0.9",
+        "asuwebplatforms/asu_governance":  "1.0.11",
         "cweagans/composer-patches":  "1.7.3",
         "drupal/acquia_purge": "1.5.0",
         "drupal/admin_toolbar":  "3.6.1",
