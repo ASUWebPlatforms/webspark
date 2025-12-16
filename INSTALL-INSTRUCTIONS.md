@@ -32,7 +32,7 @@ To avoid dependency clashes, remove the root-level composer.lock file.
 ## Get the required composer packages
 Install the necessary composer packages by running the following command in your terminal:
 ```
-ddev composer require asuwebplatforms/webspark:^2.17.0 wikimedia/composer-merge-plugin:^2.1.0
+ddev composer require asuwebplatforms/webspark:^2.16.4 wikimedia/composer-merge-plugin:^2.1.0
 ```
 
 ## Add custom-dependencies directory (if it doesn't exist)
@@ -44,7 +44,7 @@ ddev composer require asuwebplatforms/webspark:^2.17.0 wikimedia/composer-merge-
 For more information about the `custom-dependencies` folder and its purpose, please refer to the README file located within that directory.
 
 ## Add webspark-dependencies directory
-- If your repository contains an `upstream-configuration` directory at the root level, you will need to delete it. This directory is no longer needed with the newly consolidated webspark profile (as of Webspark 2.17.0).
+- If your repository contains an `upstream-configuration` directory at the root level, you will need to delete it. This directory is no longer needed with the newly consolidated webspark profile (as of Webspark 2.16.4).
 - Copy the `sample-webspark-dependencies` directory from this profile and paste it into the root of your repository.
 - Rename the copied directory from `sample-webspark-dependencies` to `webspark-dependencies`.
 - Edit the namespace declarations in the two PHP files within the `scripts` directory to be `WebsparkCustomScripts` instead of `SampleWebsparkCustomScripts` and save them.
@@ -61,7 +61,7 @@ You will need to adjust your root `composer.json` file to ONLY have three items 
 ```json
     "require": {
         "asu/custom-dependencies": "*",
-        "asuwebplatforms/webspark": "^2.17.0",
+        "asuwebplatforms/webspark": "^2.16.4",
         "wikimedia/composer-merge-plugin": "^2.1.0",
     },
 ```

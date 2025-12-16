@@ -205,4 +205,54 @@ class ComposerScripts {
 
     file_put_contents("composer.patches.json", $combinedJson . PHP_EOL);
   }
+
+  /**
+   * Build frontend dependencies using NPM.
+   *
+   * @param \Composer\Script\Event $event
+   *   The Event object passed in from Composer
+   */
+  public static function buildFrontend(Event $event)
+  {
+    $io = $event->getIO();
+    // Only run this build in the CI pipeline.
+    if (getenv('CI') === 'true') {
+      $io->write("<info>Building frontend dependencies...</info>");
+      $githubToken = getenv('GITHUB_TOKEN') ?: $_SERVER['GITHUB_TOKEN'] ?? null;
+      if (!$githubToken) {
+        $io->writeError("<error>GITHUB_TOKEN not found in environment!</error>");
+        $io->write("<comment>DEBUG: Available env keys:</comment>");
+        $io->write(print_r(array_keys($_SERVER), true));
+        exit(1);
+      }
+
+      $themeDir = 'docroot/profiles/contrib/webspark/themes/renovation';
+      $npmrcPath = "$themeDir/.npmrc";
+
+      // Write .npmrc with the token
+      file_put_contents($npmrcPath, <<<EOT
+@asu:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=$githubToken
+EOT
+      );
+
+      // Run NPM install and production build
+      $cmd = "cd $themeDir && npm install && npm run production";
+      exec($cmd, $output, $code);
+      echo implode("\n", $output);
+
+      // Clean up the token file
+      unlink($npmrcPath);
+
+      if ($code !== 0) {
+        $io->writeError("<error>NPM build failed (exit code $code).</error>");
+        exit($code);
+      }
+
+      $io->write("<info>Frontend build complete.</info>");
+    }
+    else {
+      $io->write("<info>Skipping frontend build; not in CI environment.</info>");
+    }
+  }
 }

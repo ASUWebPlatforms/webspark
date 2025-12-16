@@ -171,6 +171,28 @@ function asu_degree_rfi_update_10002(&$sandbox) {
   \Drupal::state()->set('configuration_locked', TRUE);
 }
 
+/**
+ * Update RFI submission handler URL to new endpoints.
+ */
+function asu_degree_rfi_update_10004(&$sandbox) {
+  $config = \Drupal::configFactory()->getEditable('asu_degree_rfi.settings');
+  $current_url = $config->get('asu_degree_rfi.rfi_submission_handler_url');
+
+  //Remove trailing slash if exists to handle URLs both with and without trailing slash
+  $normalized_url = rtrim($current_url, '/');
+
+  $endpoint_map = [
+    'https://5gu33wnsdm2mpgmob4c2rt3mbq0mngfo.lambda-url.us-west-2.on.aws' => 'https://crm-request-form-submission-router-prod.apps.asu.edu/v1/event/rfi',
+    'https://eakemwmmmpql5o523dnfkvvtem0ezhhc.lambda-url.us-west-2.on.aws' => 'https://crm-request-form-submission-router-qa.apps.asu.edu/v1/event/rfi',
+    'https://3ceccsb54wpba5wrdg6kgxmlv40obcjl.lambda-url.us-west-2.on.aws' => 'https://crm-request-form-submission-router-dev.apps.asu.edu/v1/event/rfi',
+  ];
+
+  if (isset($endpoint_map[$normalized_url])) {
+    $config->set('asu_degree_rfi.rfi_submission_handler_url', $endpoint_map[$normalized_url]);
+    $config->save();
+  }
+}
+
 function _asu_degree_rfi_revert_all_module_config() {
   // Get this module name.
   $module = \Drupal::service('module_handler')
