@@ -1,0 +1,8 @@
+{
+    "name": "asu/custom-dependencies",
+    "type": "project",
+    "require": {},
+    "config": {
+        "sort-packages": true
+    }
+}

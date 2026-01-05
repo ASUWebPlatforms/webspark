@@ -1,0 +1,54 @@
+name: Build Frontend Assets
+
+on:
+  push:
+    branches:
+      - main
+  # Allow us to manually trigger the workflow
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Or your desired version (e.g., 18, 22)
+          cache: 'npm' # Caches npm dependencies to speed up subsequent runs
+          cache-dependency-path: themes/renovation/package-lock.json
+
+      - name: Create .npmrc
+        working-directory: themes/renovation # Ensure we are in the correct directory for installing dependencies
+        run: |
+          echo "@asu:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.TMP_UNITY_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: themes/renovation
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.TMP_UNITY_TOKEN }}
+
+      - name: Compile webspark theme production assets
+        run: npm run production
+        working-directory: themes/renovation
+
+      - name: Remove .npmrc
+        working-directory: themes/renovation
+        run: rm .npmrc
+
+      - name: Commit and push changes
+        # Commit and push the updated compiled assets
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f themes/renovation/node_modules/@asu/unity-bootstrap-theme/dist/
+          git add themes/renovation/assets
+          git add themes/renovation/css
+          git diff --staged --quiet || git commit --amend --no-edit
+          git push --force-with-lease

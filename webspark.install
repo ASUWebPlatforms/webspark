@@ -1,0 +1,838 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Webspark installation profile.
+ */
+
+use Drupal\user\Entity\User;
+use Drupal\user\Entity\Role;
+use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\pathauto\PathautoGeneratorInterface;
+use Drush\Drush;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Drupal\purge\Plugin\Purge\Invalidation\PurgePurgers;
+
+/**
+ * Implements hook_install().
+ *
+ * Perform actions to set up the site for this profile.
+ *
+ * @see system_install()
+ */
+function webspark_install() {
+  // Enable radix theme.
+  \Drupal::service('theme_installer')
+    ->install(['radix']);
+  //Set default theme.
+  \Drupal::configFactory()
+    ->getEditable('system.theme')
+    ->set('default', 'renovation')
+    ->save();
+
+  // Assign user 1 the "administrator" role.
+  $user = User::load(1);
+  $user->roles[] = 'administrator';
+  $user->save();
+
+  // Populate the main menu.
+  $home = MenuLinkContent::create(array(
+    'title' => t('Home'),
+    'link' => array('uri' => 'internal:/'),
+    'menu_name' => 'main',
+    'weight' => -50,
+  ));
+  $home->save();
+
+  // Enable default (global) disable client-side validation on all webforms.
+  \Drupal::configFactory()->getEditable('webform.settings')
+    ->set('settings.default_form_novalidate', TRUE)
+    ->save();
+
+  // Enable config_readonly and asusf_installer_forms modules.
+  \Drupal::service('module_installer')->install(['config_readonly', 'asusf_installer_forms']);
+
+}
+
+/**
+ * Install the webform module and set its defaults.
+ */
+function webspark_update_9001(&$sandbox) {
+  \Drupal::service("module_installer")->install(["inline_form_errors"]);
+  \Drupal::service("module_installer")->install(["webform"]);
+  \Drupal::service('module_installer')->install(['webform_ui']);
+  \Drupal::service('module_installer')->install(['config_update']);
+  \Drupal::service('module_installer')->install(['config_readonly']);
+
+  // Enable default (global) disable client-side validation on all webforms.
+  \Drupal::configFactory()->getEditable('webform.settings')
+    ->set('settings.default_form_novalidate', TRUE)
+    ->save();
+}
+
+/**
+ * Add the robots txt module.
+ */
+function webspark_update_9002(&$sandbox) {
+  \Drupal::service("module_installer")->install(["robotstxt"]);
+
+  // Remove the robots file.
+  unlink('robots.txt');
+  // Clear browser cache to test right after: CTRL+R.
+}
+
+/**
+ * Install new modules.
+ */
+function webspark_update_9003(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["captcha"]);
+  $module_installer->install(["schema_metatag"]);
+  $module_installer->install(["editoria11y"]);
+}
+
+/**
+ * Install new modules.
+ */
+function webspark_update_9004(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["decorative_image_widget"]);
+}
+
+/**
+ * Install new modules.
+ */
+function webspark_update_9005(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["block_field"]);
+}
+
+/**
+ * Install webspark_cas module.
+ */
+function webspark_update_9006(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["webspark_cas"]);
+}
+
+/**
+ * Install webspark_webdir module and dependencies.
+ */
+function webspark_update_9007(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["maxlength"]);
+  $module_installer->install(["field_states_ui"]);
+  $module_installer->install(["webspark_webdir"]);
+}
+
+/**
+ * Adding image media type as an option within Media types selectable in the Media Library for Full HTML and Basic HTML formats.
+ */
+function webspark_update_9008(&$sandbox) {
+  \Drupal::configFactory()->getEditable('filter.format.basic_html')
+    ->set('filters.media_embed.settings.allowed_media_types.image', 'image')
+    ->save();
+
+  \Drupal::configFactory()->getEditable('filter.format.full_html')
+    ->set('filters.media_embed.settings.allowed_media_types.image', 'image')
+    ->save();
+}
+
+/**
+ * Uninstall webspark_isearch module.
+ */
+function webspark_update_9009(&$sandbox) {
+
+  // NOTE: The uninstall of the webspark_isearch module has been deferred
+  // to a future release due to dependencies on some of its fields, used
+  // by the webspark_webdir module. See WS2-1586 and WS2-1587 for more details.
+
+  //$module_installer = \Drupal::service("module_installer");
+  //$module_installer->uninstall(["webspark_isearch"]);
+}
+
+/**
+ * Applying new URL alias to all Drupal users
+ */
+function webspark_update_9010(&$sandbox) {
+  $apply_user_aliases = 1;
+  ## If Pathauto pattern already exists for User entities, skip rest of update.
+  $patterns_list = \Drupal::service('config.factory')->listAll($prefix = 'pathauto.pattern');
+  if (!empty($patterns_list)) {
+    foreach ($patterns_list as $value) {
+      $type = \Drupal::config($value)->get('type') ?? '';
+      if ($type === 'canonical_entities:user') {
+        \Drupal::service('messenger')
+          ->addMessage("Added new user ID URL pattern, but skipped user URL alias updates because another pattern already exists.");
+        $apply_user_aliases = 0;
+        break;
+      }
+    }
+  }
+  # Set new User alias pattern (but set last/lowest in priority)
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('pathauto.pattern.user_profile_urls');
+  \Drupal::state()->set('configuration_locked', TRUE);
+
+  # Apply update to existing users IF they don't already have an alias.
+  if ($apply_user_aliases === 1) {
+    $orig = \Drupal::config('pathauto.settings')->get('update_action');
+    # Temporary pathauto setting change: If individual alias already exists, it will be skipped
+    \Drupal::state()->set('configuration_locked', FALSE);
+    \Drupal::service('config.factory')->getEditable('pathauto.settings')
+      ->set('update_action', PathautoGeneratorInterface::UPDATE_ACTION_NO_NEW)->save();
+    \Drupal::state()->set('configuration_locked', TRUE);
+
+    $entities = [];
+    $entities['user'] = \Drupal::entityQuery('user')->accessCheck(FALSE)->execute();
+    $result = [];
+    foreach ($entities as $type => $entity_list) {
+      foreach ($entity_list as $entity_id) {
+        $result[] = [
+          'entity_type' => $type,
+          'id' => $entity_id,
+        ];
+      }
+    }
+
+    ## Batch API
+    if (!isset($sandbox['current'])) {
+      $sandbox['current'] = 0;
+      $sandbox['max'] = count($result);
+    }
+    $limit = 50;
+    $result = array_slice($result, $sandbox['current'], $limit);
+
+    # Alias updates
+    foreach ($result as $row) {
+      $entity_storage = \Drupal::entityTypeManager()
+        ->getStorage($row['entity_type']);
+      $entity = $entity_storage->load($row['id']);
+      \Drupal::service('pathauto.generator')
+        ->updateEntityAlias($entity, 'update');
+      $sandbox['current']++;
+    }
+
+    # Restore original pathauto overwrite/update settings
+    \Drupal::state()->set('configuration_locked', FALSE);
+    \Drupal::service('config.factory')->getEditable('pathauto.settings')
+      ->set('update_action', $orig)->save();
+    \Drupal::state()->set('configuration_locked', TRUE);
+
+    # More Batch API
+    $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['current'] / $sandbox['max']);
+    if ($sandbox['#finished'] >= 1) {
+      return t('Adding URL aliases to user accounts that did not have an alias has been completed.');
+    }
+  }
+}
+
+/**
+ * Adding Article content type fields.
+ */
+function webspark_update_9011(&$sandbox) {
+  // Unlock the configuration storage.
+  \Drupal::logger("webspark")->notice("Started updating article content type configs...");
+
+  \Drupal::state()->set('configuration_locked', FALSE);
+  // Importing new configs from webspark profile
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.base_field_override.node.article.promote');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.date_format.article_date');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.node.article.field_author');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.node.article.field_byline');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.node.article.field_date_published');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.storage.node.field_author');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.storage.node.field_byline');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.storage.node.field_date_published');
+  // Update existing configs from webspark profile
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_form_display.node.article.default');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_view_display.node.article.default');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_view_display.node.article.rss');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_view_display.node.article.teaser');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('node.type.article');
+  // Lock the configuration storage.
+  \Drupal::state()->set('configuration_locked', TRUE);
+
+  \Drupal::logger("webspark")->notice("Updates to Article content type were attempted.");
+  // @TODO Not sure why simple sitemap XML setting isn't applying?
+}
+
+/**
+ * Raising lower log message caps to 10K
+ */
+function webspark_update_9012(&$sandbox) {
+  // Unlock the configuration storage.
+  \Drupal::state()->set('configuration_locked', FALSE);
+  // Importing new configs from webspark profile
+  $limit = \Drupal::service('config.factory')->get('dblog.settings')->get('row_limit');
+  if ( $limit < 10000 && $limit > 0) {
+    \Drupal::service('config.factory')->getEditable('dblog.settings')->set('row_limit', 10000)->save();
+    \Drupal::logger("webspark")->notice("Logging threshold increased from %lim to 10K", ["%lim" => $limit]);
+  } else {
+    \Drupal::logger("webspark")->notice("Logging threshold already 10K or higher. Skipping increase.");
+  }
+  // Lock the configuration storage.
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Install imagemagick module and dependencies.
+ */
+function webspark_update_9013(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["file_mdm"]);
+  $module_installer->install(["sophron"]);
+  $module_installer->install(["imagemagick"]);
+
+  // Importing configs for ImageMagick module.
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('file_mdm.file_metadata_plugin.getimagesize');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('file_mdm.settings');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('imagemagick.file_metadata_plugin.imagemagick_identify');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('imagemagick.settings');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('sophron.settings');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('system.image');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Updating Article content type to include top hero, improved node edit form
+ */
+function webspark_update_9014(&$sandbox) {
+  // Unlock the configuration storage.
+  \Drupal::logger("webspark")->notice("Updating article content type configs...");
+  \Drupal::state()->set('configuration_locked', FALSE);
+  // Update existing configs from webspark profile
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.node.article.body');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.node.article.field_author');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.node.article.field_date_published');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.node.article.field_header_style');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.node.article.field_media');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_form_display.node.article.default');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_view_display.node.article.default');
+  // Lock the configuration storage.
+  \Drupal::state()->set('configuration_locked', TRUE);
+  \Drupal::logger("webspark")->notice("Article content type updated.");
+}
+
+/**
+ * Update the allowed HTML tags for the Basic HTML format.
+ */
+function webspark_update_9015(&$sandbox) {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('filter.format.basic_html');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Update the settings of the FontAwesome module to work with ASUAwesome better.
+ */
+function webspark_update_9017(&$sandbox) {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('fontawesome.settings');
+  \Drupal::state()->set('configuration_locked', TRUE);
+
+  // Revoke additional fontawesome settings permissions for authenticated role.
+  $role = Role::load('authenticated');
+  $role->revokePermission('access fontawesome additional settings');
+  $role->trustData()->save();
+}
+/**
+ * WS2-1452 : Install CKeditor 5 module.
+ */
+function webspark_update_9018(&$sandbox) {
+  $module_installer = \Drupal::service("module_installer");
+
+  $module_installer->install(["ckeditor5"]);
+}
+
+/**
+ * Convert 'node_type' to 'entity_bundle:node' in configurations
+ */
+function webspark_update_9019(&$sandbox) {
+  $db = \Drupal::database();
+  $query = $db->select('config', 'c')->fields('c', ['name', 'data'])->condition('data', '%' . $db->escapeLike('node_type') . '%', "LIKE");
+  $results = $query->execute()->fetchAll();
+  $new_results = [];
+  // Convert node_type to entity_bundle:node and add result to $new_results.
+  foreach ($results as $result) {
+    $fixUp = _fix_serialized(str_replace('node_type', 'entity_bundle:node', $result->data));
+    $new_results[$result->name] = ['name'=> $result->name, 'data' => $fixUp];
+  }
+  foreach ($new_results as $nr) {
+    $decoded = unserialize($nr['data'], ['allowed_classes' => TRUE]);
+    try {
+      /** @var \Drupal\Core\Config\ConfigFactoryInterface $configFactory */
+      $configFactory = \Drupal::service('config.factory');
+      $config = $configFactory->getEditable($nr['name']);
+      $config->setData($decoded)->save();
+    } catch (\Exception $e) {
+      \Drupal::logger('webspark')->error($e->getMessage());
+    }
+  }
+}
+
+/**
+ * Fixes the length of the given string and returns the fixed length string representation.
+ *
+ * Borrowed from https://gist.github.com/chlp/8dac656c562941308d4621fd61856e22
+ *
+ * @param array $matches The array of matches from the regular expression
+ * @return string The fixed length string representation
+ */
+function _fix_str_length($matches): string {
+  $string = $matches[2];
+  $right_length = strlen($string); // yes, strlen even for UTF-8 characters, PHP wants the mem size, not the char count
+  return 's:' . $right_length . ':"' . $string . '";';
+}
+/**
+ * Fix serialized data for security and compatibility.
+ *
+ * Borrowed from https://gist.github.com/chlp/8dac656c562941308d4621fd61856e22
+ *
+ * @param string $string The serialized data to be fixed.
+ * @return string The fixed serialized data.
+ */
+function _fix_serialized($string): string {
+  // securities
+  if ( !preg_match('/^[aOs]:/', $string) ) return $string;
+  if ( unserialize($string, ['allowed_classes' => true]) !== false ) return $string;
+  $string = preg_replace("%\n%", "", $string);
+  // doublequote exploding
+  $data = preg_replace('%";%', "µµµ", $string);
+  $tab = explode("µµµ", $data);
+  $new_data = '';
+  foreach ($tab as $line) {
+    $new_data .= preg_replace_callback('%\bs:(\d+):"(.*)%', '_fix_str_length', $line);
+  }
+  return $new_data;
+}
+
+/**
+ * WS2-1452, 1871 & 1915: Update layouts and text formats; install editor_advanced_link; uninstall CKEditor4 and Fakeobjects.
+ */
+function webspark_update_10000(&$sandbox) {
+  if (Drupal::moduleHandler()->moduleExists('fakeobjects')) {
+    Drupal::service('module_installer')->uninstall(['fakeobjects']);
+  }
+  if (Drupal::moduleHandler()->moduleExists('ckeditor')) {
+    Drupal::service('module_installer')->uninstall(['ckeditor']);
+  }
+  if (!Drupal::moduleHandler()->moduleExists('editor_advanced_link')) {
+    Drupal::service('module_installer')->install(['editor_advanced_link']);
+  }
+
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('editor.editor.basic_html');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('editor.editor.full_html');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('editor.editor.minimal_format');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('filter.format.basic_html');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('filter.format.full_html');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('filter.format.minimal_format');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('core.entity_view_display.node.page.default');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Install Layout builder report module
+ */
+function webspark_update_10001(&$sandbox) {
+  if (!Drupal::moduleHandler()->moduleExists('layout_builder_usage_reports')) {
+    Drupal::service('module_installer')->install(['layout_builder_usage_reports']);
+  }
+}
+
+/**
+ * Implements hook_update() on WS2-1983.
+ *
+ * People who execute 10000 will already have this, but people who updated to
+ * or installed 2.12.0 might not.
+ */
+function webspark_update_10002(&$sandbox) {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  $config_factory = \Drupal::service('config.factory');
+  $editor_configs = $config_factory->listAll($prefix = 'editor.editor');
+  $editor_configs = [...$editor_configs, ...$config_factory->listAll($prefix = 'filter.format')];
+  foreach ($editor_configs as $value) {
+    $config = \Drupal::config($value);
+    if ($config) {
+      $data = $config->getRawData();
+      if ($data && isset($data['settings']['plugins']['ckeditor5_heading']['enabled_headings'])) {
+        $allowed_tags = $data['settings']['plugins']['ckeditor5_sourceEditing']['allowed_tags'];
+        if ($allowed_tags) {
+          $div_class = array_search('<div class>', $allowed_tags);
+          if ($div_class === false) {
+            array_push($allowed_tags, '<div class>');
+            $config_editable = $config_factory->getEditable($value);
+            $config_editable->set('settings.plugins.ckeditor5_sourceEditing.allowed_tags', $allowed_tags);
+            $config_editable->save();
+            \Drupal::service('messenger')
+              ->addMessage("CK Editor - Modified Source Editing for " . $config->getName());
+          }
+        }
+      }
+    }
+  }
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-1565 - CK Editor - Remove H1 capabilities for non hero blocks.
+ */
+function webspark_update_10003(&$sandbox) {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  $config_factory = \Drupal::service('config.factory');
+  $editor_configs = $config_factory->listAll($prefix = 'editor.editor');
+  $editor_configs = [...$editor_configs, ...$config_factory->listAll($prefix = 'filter.format')];
+  foreach ($editor_configs as $value) {
+    $config = \Drupal::config($value);
+    if ($config) {
+      $data = $config->getRawData();
+      if ($data && isset($data['settings']['plugins']['ckeditor5_heading']['enabled_headings'])) {
+        $headings = $data['settings']['plugins']['ckeditor5_heading']['enabled_headings'];
+        if ($headings) {
+          $heading1_key = array_search('heading1', $headings);
+          if ($heading1_key !== false) {
+            unset($headings[$heading1_key]);
+            $config_editable = $config_factory->getEditable($value);
+            $config_editable->set('settings.plugins.ckeditor5_heading.enabled_headings', $headings);
+            $config_editable->save();
+            \Drupal::service('messenger')
+              ->addMessage("CK Editor - Removed H1 capabilities for " . $config->getName());
+          }
+        }
+      }
+    }
+  }
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-2011 and WS2-2088: Set TTL to 1 day and add pantheon_advanced_page_cache
+ */
+function webspark_update_10004(&$sandbox) {
+  // Don't set TTL if pantheon_advanced_page_cache isn't available. Avoiding
+  // overly aggressive caching.
+  if (!Drupal::moduleHandler()->moduleExists('pantheon_advanced_page_cache')) {
+    Drupal::service('module_installer')->install(['pantheon_advanced_page_cache']);
+
+    \Drupal::state()->set('configuration_locked', FALSE);
+    $config_factory = \Drupal::configFactory();
+    $config = $config_factory->getEditable('system.performance');
+    // Only set if default of zero or none is found. Otherwise, we assume the
+    // site owner has intentionally changed the setting. Using non-typed check so
+    // if there's a null or 0 or even '0' value they'll all get updated.
+    if ($config->get('cache.page.max_age') == 0) {
+      $config->set('cache.page.max_age', 86400);
+    }
+    $config->save(TRUE);
+    \Drupal::state()->set('configuration_locked', TRUE);
+  }
+}
+
+function webspark_update_10005(&$sandbox) {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.block_content.image.field_image_caption');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Adds Display List block and fields.
+ */
+function webspark_update_10006(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('block_content.type.display_list');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.block_content.display_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.display_list_item.carousel_card');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.display_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.block_content.display_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.display_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.display_list_item.landscape');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.display_list_item.portrait');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.display_list.field_anchor_menu_settings');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.display_list.field_list_item');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.display_list.field_spacing_bottom');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.display_list.field_spacing_top');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.display_list.field_tooltip');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.display_list_item.field_body');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.display_list_item.field_heading');
+  \Drupal::service('webspark.config_manager')->importConfigFile('paragraphs.paragraphs_type.display_list_item');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Adds Icon List block and fields.
+ */
+function webspark_update_10007(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('block_content.type.icon_list');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.block_content.icon_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.icon_list_item.carousel_card');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.icon_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.block_content.icon_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.icon_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.icon_list_item.landscape');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.icon_list_item.portrait');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.icon_list.field_anchor_menu_settings');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.icon_list.field_list_item');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.icon_list.field_spacing_bottom');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.icon_list.field_spacing_top');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.icon_list.field_tooltip');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.icon_list_item.field_body');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.icon_list_item.field_icon');
+  \Drupal::service('webspark.config_manager')->importConfigFile('paragraphs.paragraphs_type.icon_list_item');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Adds Step List block and fields.
+ */
+function webspark_update_10008(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('block_content.type.step_list');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.block_content.step_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.step_list_item.carousel_card');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.step_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.block_content.step_list.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.step_list_item.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.step_list_item.landscape');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.step_list_item.portrait');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_accent_color');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_anchor_menu_settings');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_list_item');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_spacing_bottom');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_spacing_top');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.step_list.field_tooltip');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.step_list_item.field_body');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.step_list_item.field_heading');
+  \Drupal::service('webspark.config_manager')->importConfigFile('paragraphs.paragraphs_type.step_list_item');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Aux fields for the new Display, Icon, and Step blocks
+ */
+function webspark_update_10009(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.storage.block_content.field_list_item');
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.storage.block_content.field_accent_color');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Makes Image Based Card link text required.
+ */
+function webspark_update_10010(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->updateConfigFile('field.field.paragraph.image_based_card.field_link');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * Adds Hover Cards block and fields.
+ */
+function webspark_update_10011(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  \Drupal::service('webspark.config_manager')->importConfigFile('block_content.type.hover_cards');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.block_content.hover_cards.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.media.cropped_image_16_25.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.media.cropped_image_16_25.media_library');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.hover_card.carousel_card');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_form_display.paragraph.hover_card.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.block_content.hover_cards.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.media.cropped_image_16_25.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.media.cropped_image_16_25.media_library');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.hover_card.default');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.hover_card.landscape');
+  \Drupal::service('webspark.config_manager')->importConfigFile('core.entity_view_display.paragraph.hover_card.portrait');
+  \Drupal::service('webspark.config_manager')->importConfigFile('crop.type.16_25');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.hover_cards.field_anchor_menu_settings');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.hover_cards.field_hover_cards');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.hover_cards.field_spacing_bottom');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.hover_cards.field_spacing_top');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.block_content.hover_cards.field_tooltip');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.media.cropped_image_16_25.field_media_image');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.hover_card.field_body');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.hover_card.field_heading');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.hover_card.field_link');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.field.paragraph.hover_card.field_media');
+  \Drupal::service('webspark.config_manager')->importConfigFile('field.storage.block_content.field_hover_cards');
+  \Drupal::service('webspark.config_manager')->importConfigFile('image.style.block_image_16_25_lge');
+  \Drupal::service('webspark.config_manager')->importConfigFile('media.type.cropped_image_16_25');
+  \Drupal::service('webspark.config_manager')->importConfigFile('paragraphs.paragraphs_type.hover_card');
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-2089 - CK Editor - Added Highlighting capabilities and Animated Blockquote.
+ */
+function webspark_update_10012(&$sandbox): void{
+  \Drupal::state()->set('configuration_locked', FALSE);
+  $config_factory = \Drupal::service('config.factory');
+  // Find all editor configs
+  $editor_configs = $config_factory->listAll('editor.editor');
+  $editor_configs = [...$editor_configs, ...$config_factory->listAll('filter.format')];
+  // Loop through all editor configs
+  foreach ($editor_configs as $value) {
+    $config = \Drupal::config($value);
+    // Check if the config is not the restricted_html
+    if ($config && !strpos($config->getName(), 'restricted_html') && !strpos($config->getName(), 'minimal_format') && !strpos($config->getName(), 'webform_default')) {
+      $data = $config->getRawData();
+      if ($data && isset($data['settings']['toolbar']['items'])) {
+        $toolbar_items = $data['settings']['toolbar']['items'];
+        if ($toolbar_items) {
+          // Add Animated Blockquote
+          $webspark_blockquote_key = array_search('websparkBlockquote', $toolbar_items);
+          if ($webspark_blockquote_key !== false) {
+            $position = $webspark_blockquote_key + 1;
+            $toolbar_items = array_merge(
+              array_slice($toolbar_items, 0, $position),
+              ['websparkBlockquoteAnimated'],
+              array_slice($toolbar_items, $position)
+            );
+          }
+          else {
+            array_push($toolbar_items, 'websparkBlockquoteAnimated');
+          }
+
+          // Add Highlighting capabilities
+          $webspark_blockquote_animated_key = array_search('websparkBlockquoteAnimated', $toolbar_items);
+          if ($webspark_blockquote_animated_key !== false) {
+            $position = $webspark_blockquote_animated_key + 1;
+            $toolbar_items = array_merge(
+              array_slice($toolbar_items, 0, $position),
+              ['websparkAnimatedText'],
+              array_slice($toolbar_items, $position)
+            );
+          }
+          else {
+            array_unshift($toolbar_items, 'websparkAnimatedText');
+          }
+
+          $config_editable = $config_factory->getEditable($value);
+          $config_editable->set('settings.toolbar.items', $toolbar_items);
+          $config_editable->save();
+        }
+      }
+      else if ($data && isset($data['filters']['filter_html']['settings']['allowed_html'])) {
+        $allowed_html = $data['filters']['filter_html']['settings']['allowed_html'];
+        // Add mark class to allowed_html
+        if ($allowed_html) {
+          $allowed_html = $allowed_html . ' <mark class>';
+          $config_editable = $config_factory->getEditable($value);
+          $config_editable->set('filters.filter_html.settings.allowed_html', $allowed_html);
+          $config_editable->save();
+        }
+      }
+    }
+  }
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-1623 - Enable the asu_config_utility module.
+ */
+function webspark_update_10013(&$sandbox): void {
+  \Drupal::service('module_installer')->install(['asu_config_utility']);
+  \Drupal::service('module_installer')->install(['asu_components_appearance']);
+}
+
+/**
+ * WS2-2223 - Changed comments permissions and register: admin_only
+ */
+// We cannot read in WHOLE role permissions after a site has been launched.
+// This overwrites user permissions that have been customized after the fact.
+// Commenting it out. New sites will get the new permissions. Existing sites can
+// apply manually.
+function webspark_update_10014(&$sandbox): void{
+//  \Drupal::state()->set('configuration_locked', FALSE);
+//
+//  //Changed comments permissions
+//  \Drupal::service('asu_config.config_manager')->updateConfigFile('user.role.authenticated');
+//  \Drupal::service('asu_config.config_manager')->updateConfigFile('user.role.anonymous');
+//  //Changed register: admin_only
+//  \Drupal::service('asu_config.config_manager')->updateConfigFile('user.settings');
+//
+//  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-1788 - Update block content gallery display
+ */
+function webspark_update_10015(&$sandbox): void{
+  \Drupal::state()->set('configuration_locked', FALSE);
+
+  //Update block content gallery display
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('core.entity_form_display.block_content.gallery.default');
+
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-1836 - Added image centering
+ */
+function webspark_update_10016(&$sandbox): void{
+  \Drupal::state()->set('configuration_locked', FALSE);
+
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('core.entity_form_display.block_content.image.default');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('core.entity_view_display.block_content.image.default');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.block_content.image.field_center_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.storage.block_content.field_center_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.storage.block_content.field_image_size');
+
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-2322 - Allow webp images
+ */
+function webspark_update_10017(&$sandbox): void{
+  \Drupal::state()->set('configuration_locked', FALSE);
+
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.cropped_image_sqare.field_media_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.cropped_image_wide.field_media_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.image.field_media_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.image_block_images.field_media_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.story_hero.field_media_image');
+  \Drupal::service('asu_config.config_manager')->updateConfigFile('field.field.media.video_poster_image_73_100.field_media_image');
+
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * ACMN-206: Enable the acquia_purge module.
+ */
+function webspark_update_10018(&$sandbox): void{
+  // Enable and configure purge modules.
+  __webspark_setup_purge();
+}
+
+/**
+ * Helper function to enable and configure purge modules.
+ */
+function __webspark_setup_purge() {
+  include_once DRUPAL_ROOT . '/modules/contrib/asu_governance/asu_governance.install';
+  __asu_governance_setup_purge();
+}
+/**
+ * ACMN-247: Disable the pantheon_advanced_page_cache if it is enabled.
+ */
+function webspark_update_10019(&$sandbox): void {
+
+  $module_handler = \Drupal::service('module_handler');
+  if ($module_handler->moduleExists('pantheon_advanced_page_cache')) {
+    \Drupal::service('module_installer')->uninstall(['pantheon_advanced_page_cache']);
+    \Drupal::logger('webspark')->notice('Disabled pantheon_advanced_page_cache module.');
+  }
+  else {
+    \Drupal::logger('webspark')->notice('pantheon_advanced_page_cache module is not enabled, no action taken.');
+  }
+
+}
