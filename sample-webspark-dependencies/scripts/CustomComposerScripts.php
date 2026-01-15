@@ -102,12 +102,18 @@ class CustomComposerScripts
     }, $arguments);
 
     // Remove the projects from the custom-dependencies composer.json
-    $cmd = "composer --working-dir=custom-dependencies remove " . implode(' ', $args);
+    $cmd = "composer --working-dir=custom-dependencies --no-update remove " . implode(' ', $args);
     $io->writeError($cmd . PHP_EOL);
     passthru($cmd, $statusCode);
 
     if ($statusCode) {
       throw new \RuntimeException("Could not remove dependency from custom dependencies.");
+    }
+    else {
+      exec('composer install', $output, $statusCode);
+      if ($statusCode) {
+        throw new \RuntimeException("Could not install dependencies after removal.");
+      }
     }
 
     // Delete composer.lock and vendor directory from custom-dependencies if they exist
