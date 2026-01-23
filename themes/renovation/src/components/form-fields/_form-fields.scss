@@ -1,0 +1,19 @@
+// TODO: Determine if this is actually being applied
+#drupal-off-canvas {
+  form {
+    .form-check-label {
+      &::before {
+        top: -0.3rem;
+      }
+
+      &::after {
+        top: -0.1rem;
+      }
+    }
+  }
+}
+
+// Reset padding from the submit button in Webforms
+.webform-submission-form .form-submit.btn-primary {
+  padding-left: var(--bs-btn-padding-x) !important;
+}
