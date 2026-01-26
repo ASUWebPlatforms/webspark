@@ -29,7 +29,7 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.TMP_UNITY_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: themes/renovation
         env:
           NODE_AUTH_TOKEN: ${{ secrets.TMP_UNITY_TOKEN }}
