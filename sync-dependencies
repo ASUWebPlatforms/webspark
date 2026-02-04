@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#--------------------------------------------------------------------------
+# Functions
+#--------------------------------------------------------------------------
+
+function replace_in_file() {
+  local FUNCTION_NAME=$1
+  local HOOK_TYPE=$2
+  local SOURCE_FILE=$3
+
+  # Extract updated function (remove shebang)
+  sed '1d' "$SOURCE_FILE" > "$TMP_FUNC" || return 1
+  # Replace the existing function in the pre-commit hook with any updates from webspark-dependencies
+  awk -v func_file="$TMP_FUNC" -v FUNCTION_NAME="$FUNCTION_NAME" '
+    BEGIN {
+      # Read the new function into memory
+      while ((getline l < func_file) > 0) {
+        if (new_func != "")
+          new_func = new_func "\n" l
+        else
+          new_func = l
+      }
+      close(func_file)
+    }
+
+    # Detect start of old function
+    $0 ~ "^" FUNCTION_NAME "\\(\\) \\{" {
+      in_func = 1
+      brace_count = 1
+      skip_next_blank = 1
+      next
+    }
+
+    # Track braces while inside function
+    in_func {
+      brace_count += gsub(/\{/, "&")
+      brace_count -= gsub(/\}/, "&")
+
+      if (brace_count == 0) {
+        # End of function - insert new version
+        print new_func
+        print ""  # Add one blank line after function
+        in_func = 0
+      }
+      next
+    }
+
+    # Remove function call line
+    $0 ~ "^[[:space:]]*" FUNCTION_NAME "[[:space:]]*$" {
+      skip_next_blank = 1
+      next
+    }
+
+    # Skip blank line after function call if flagged
+    skip_next_blank && /^[[:space:]]*$/ {
+      skip_next_blank = 0
+      next
+    }
+
+    # Reset flag on non-blank line
+    skip_next_blank { skip_next_blank = 0 }
+
+    # Print everything else
+    { print }
+  ' ".git/hooks/${HOOK_TYPE}" > ".git/hooks/${HOOK_TYPE}.tmp" \
+  && mv ".git/hooks/${HOOK_TYPE}.tmp" ".git/hooks/${HOOK_TYPE}"
+
+  # Remove duplicate trailing blank lines
+  sed -i.bak -e :a -e '/^\n*$/{$d;N;ba' -e '}' ".git/hooks/${HOOK_TYPE}" && rm ".git/hooks/${HOOK_TYPE}.bak"
+}
+
+function sync_git_hook() {
+  local HOOK_TYPE=$1
+  local FUNCTION_NAME=$2
+  local DEST=$3
+  local HOOK_FILE=".git/hooks/${HOOK_TYPE}"
+  local SOURCE_FILE="${DEST}scripts/${HOOK_TYPE}"
+
+  if [[ -f "$HOOK_FILE" ]]; then
+    if grep -q "$FUNCTION_NAME" "$HOOK_FILE"; then
+      replace_in_file "$FUNCTION_NAME" "$HOOK_TYPE" "$SOURCE_FILE" && \
+      chmod +x "$HOOK_FILE" && \
+      rm "$SOURCE_FILE"
+      return 0
+    else
+      sed '1d' "$SOURCE_FILE" >> "$HOOK_FILE" && \
+      chmod +x "$HOOK_FILE" && \
+      rm "$SOURCE_FILE"
+      return 0
+    fi
+  else
+    cp "$SOURCE_FILE" "$HOOK_FILE" && \
+    chmod +x "$HOOK_FILE" && \
+    rm "$SOURCE_FILE"
+  fi
+}
+
+function sync_prettierignore() {
+  local DEST=$1
+  local SOURCE_FILE="${DEST}scripts/.prettierignore"
+
+  cp "$SOURCE_FILE" .prettierignore && \
+  rm "$SOURCE_FILE"
+}
+
+#--------------------------------------------------------------------------
+# Main Script
+#--------------------------------------------------------------------------
+
+# Run locally only (not on Acquia Cloud and not on CI)
+if [ -z "${AH_SITE_ENVIRONMENT:-}" ] && [ -z "${CI:-}" ]; then
+  TMP_FUNC=$(mktemp)
+  trap 'rm -f "$TMP_FUNC"' EXIT
+
+  SOURCE="docroot/profiles/contrib/webspark/sample-webspark-dependencies/"
+  DEST="webspark-dependencies/"
+
+  echo "Starting dependency sync..."
+
+  # Ensure destination exists.
+  if [[ ! -d "$DEST" ]]; then
+    echo "Destination directory does not exist. Creating now."
+    mkdir -p "$DEST"
+  fi
+
+  # Sync using rsync.
+  if [[ ! -d "$SOURCE" ]]; then
+    echo "Source directory $SOURCE does not exist. Exiting."
+    exit 1
+  fi
+  rsync -avq --delete "$SOURCE" "$DEST"
+
+  # Replace namespaces inside all PHP files.
+  find "$DEST" -type f -name "*.php" \
+    -exec sed -i.bak 's/namespace SampleWebsparkCustomScripts;/namespace WebsparkCustomScripts;/g' {} \;
+
+  find "$DEST" -type f -name "*.php.bak" -delete
+
+  # Sync git hooks
+  if sync_git_hook "pre-commit" "asu_commit_check" "$DEST"; then
+    echo "Pre-commit hook synced successfully."
+  else
+    echo "Pre-commit hook sync failed."
+  fi
+
+  if sync_git_hook "post-commit" "asu_post_commit_actions" "$DEST"; then
+    echo "Post-commit hook synced successfully."
+  else
+    echo "Post-commit hook sync failed."
+  fi
+
+  if sync_prettierignore "$DEST"; then
+    echo ".prettierignore synced successfully."
+  else
+    echo ".prettierignore sync failed."
+  fi
+
+  echo "Webspark dependencies directory synced successfully."
+fi

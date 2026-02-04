@@ -1,0 +1,43 @@
+style:
+  version: 2.16.1
+  css:
+    theme:
+      assets/css/renovation.style.css: {}
+  js:
+    assets/js/bootstrap.bundle.min.js: {}
+    js/datalayer.js: {}
+    js/animated.js: {}
+    node_modules/@asu/unity-bootstrap-theme/dist/js/unity-bootstrap.umd.js: { minified: true }
+    # assets/js/renovation.script.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
+charts_graphs:
+  js:
+    src/components/charts-and-graphs/charts-and-graphs.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
+renovation.chartjs:
+  remote: https://github.com/chartjs/Chart.js
+  version: 3.2.0
+  license:
+    name: MIT
+    url: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md
+    gpl-compatible: true
+  js:
+    https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js: { type: external, minified: true }
+
+layout_builder:
+  version: VERSION
+  css:
+    theme:
+      css/layout-builder.css: {}
+
+messages:
+  js:
+    js/messages.js: {}
