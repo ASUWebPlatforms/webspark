@@ -1,0 +1,12 @@
+// TODO: Verify if this is needed after CKEditor is updated
+// Override for the CKEditor table
+.uds-table:not(.uds-table-fixed) {
+  table {
+    tr {
+      :nth-child(n+1) {
+        min-width: unset;
+        max-width: unset;
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+!node_modules
+node_modules/*
+
+!node_modules/@asu
+node_modules/@asu/*
+!node_modules/@asu/unity-react-core
+node_modules/@asu/unity-react-core/*
+!node_modules/@asu/unity-react-core/dist
+node_modules/@asu/unity-react-core/dist/*
+!node_modules/@asu/unity-react-core/dist/unityReactCore.min.js
+!node_modules/@asu/unity-react-core/dist/unityReactCore.umd.js
+
+.idea/
+.DS_Store

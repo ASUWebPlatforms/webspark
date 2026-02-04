@@ -1,0 +1,7 @@
+asu_quikpay.rtpn:
+  path: '/commerce_nelnet/rtpn'
+  defaults:
+    _controller: '\Drupal\asu_quikpay\Controller\AsuQuikpayOffSite::content'
+    _title: 'ASU Commerce RTPN'
+  requirements:
+    _access: 'TRUE' 

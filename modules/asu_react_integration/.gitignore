@@ -1,0 +1,28 @@
+# NodeJS projects
+!node_modules
+node_modules/*
+
+!node_modules/react/
+node_modules/react/*
+!node_modules/react/umd/
+node_modules/react/umd/*
+!node_modules/react/umd/react.production.min.js
+
+!node_modules/react-dom/
+node_modules/react-dom/*
+!node_modules/react-dom/umd/
+node_modules/react-dom/umd/*
+!node_modules/react-dom/umd/react-dom.production.min.js
+
+  # Drupal/external libraries
+/vendor/
+
+# PHPStorm (IDE) configurations
+.idea/
+
+# Config management script output
+/config/_*changes.diff
+/config/**/_diff_commands.bash
+*APPLICABLE.patch
+.DS_Store
+.DS_Stor*
