@@ -1,0 +1,24 @@
+# This adds the plugin JavaScript to the page.
+# cSpell:ignore simplebox demobox
+
+websparkplugin:
+  js:
+    js/build/websparkPlugin.js: { preprocess: false, minified: true }
+    /libraries/fontawesome/js/all.min.js: { preprocess: false, minified: true }
+    /profiles/contrib/webspark/themes/renovation/js/asuawesome.js: { preprocess: false, minified: false }
+  css:
+    theme:
+      css/websparkplugin.css: { }
+      css/websparkglobal.css: { }
+      /profiles/contrib/webspark/themes/renovation/assets/css/renovation.style.css: { }
+      /profiles/contrib/webspark/themes/renovation/css/ckeditor-override.css: { }
+
+  dependencies:
+    - core/ckeditor5
+
+# Loaded in the text format configuration form to provide styling for the icon
+# used in toolbar config.
+admin.websparkplugin:
+  css:
+    theme:
+      css/websparkplugin.admin.css: { }

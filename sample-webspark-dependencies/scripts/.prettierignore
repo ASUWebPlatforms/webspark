@@ -1,0 +1,17 @@
+**/vendor/**/*
+**/node_modules/**/*
+**/build/**/*
+**/js_test_files/**/*
+**/css_test_files/**/*.css
+docroot/core/modules/locale/tests/locale_test.js
+*.yml
+docroot/core/themes/stable9/css/core/assets/vendor/**/*.css
+docroot/core/misc/jquery.form.js
+
+# Temporary until they are brought up to standards
+docroot/core/scripts/**/*
+docroot/core/modules/ckeditor5/webpack.config.js
+
+*.min.js
+*.min.css
+**/js/build/*.js

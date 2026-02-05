@@ -1,0 +1,9 @@
+{% block paragraph %}
+  <li>
+    {% block content %}
+      {{ content.field_heading }}
+      <br>
+      <span>{{ paragraph.field_body.value|striptags('<a>')|raw }}</span>
+    {% endblock %}
+  </li>
+{% endblock paragraph %}

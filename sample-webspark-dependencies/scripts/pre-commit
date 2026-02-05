@@ -1,0 +1,123 @@
+#!/bin/bash
+
+asu_commit_check() {
+  # Handle script interruption (Ctrl+C)
+  trap '
+    [ -f .git/hooks/phpcbf_fix_list.log ] && rm .git/hooks/phpcbf_fix_list.log
+    [ -f .git/hooks/prettier_fix_list.log ] && rm .git/hooks/prettier_fix_list.log
+    echo -e "\n[info] Script interrupted by user. Exiting."
+    exit 130
+  ' INT
+
+  # Only run locally (not on Acquia Cloud and not on CI)
+  if [ -z "${AH_SITE_ENVIRONMENT:-}" ] && [ -z "${CI:-}" ]; then
+    # Check for skip flag
+    if [ "$SKIP_LINT" = "true" ] || git config --bool hooks.skip-lint; then
+      exit 0
+    fi
+
+    # Define color codes
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    YELLOW_BG='\033[43m'
+    RED_BG='\033[41m'
+    GREEN_BG='\033[42m'
+    NC='\033[0m' # No Color
+    BLACK='\033[0;30m'
+
+    PROJECT_PATH=$(git rev-parse --show-toplevel)
+    PHPCS_BIN="$PROJECT_PATH/vendor/bin/phpcs"
+    if [ ! -x "$PHPCS_BIN" ]; then
+      echo -e "${RED_BG}[error]${NC} ${RED}PHP CodeSniffer binary not found at $PHPCS_BIN. Please run `ddev composer install`."${NC}
+      exit 1
+    fi
+    PHPCBF_BIN="$PROJECT_PATH/vendor/bin/phpcbf"
+    if [ ! -x "$PHPCBF_BIN" ]; then
+      echo -e "${RED_BG}[error]${NC} ${RED}PHP Code Beautifier binary not found at $PHPCBF_BIN. Please run `ddev composer install`."${NC}
+      exit 1
+    fi
+    DRUPAL="$PROJECT_PATH/vendor/drupal/coder/coder_sniffer/Drupal"
+    if [ ! -d "$DRUPAL" ]; then
+      echo -e "${RED_BG}[error]${NC} ${RED}Drupal CodeSniffer Standards not found at $DRUPAL. Please run `ddev composer install`."${NC}
+      exit 1
+    fi
+    DRUPAL_PRACTICE="$PROJECT_PATH/vendor/drupal/coder/coder_sniffer/DrupalPractice"
+    if [ ! -d "$DRUPAL_PRACTICE" ]; then
+      echo -e "${RED_BG}[error]${NC} ${RED}Drupal Practice CodeSniffer Standards not found at $DRUPAL_PRACTICE. Please run `ddev composer install`."${NC}
+      exit 1
+    fi
+    PRETTIER_BIN="$PROJECT_PATH/node_modules/.bin/prettier"
+    if [ ! -x "$PRETTIER_BIN" ]; then
+      echo -e "${RED_BG}[error]${NC} ${RED}Prettier binary not found at $PRETTIER_BIN. Please run `yarn install`."${NC}
+      exit 1
+    fi
+
+    # Get the list of files with changes to be committed
+    STAGED_PHP_FILES=$(git diff-index --name-only --cached HEAD | grep -E '\.(php|module|inc|install|test|profile|theme|info)$')
+    # Add files for Prettier checking
+    STAGED_PRETTIER_FILES=$(git diff-index --name-only --cached HEAD | grep -E '\.(js|css|md|yml|yaml|json)$')
+
+    if [ -z "$STAGED_PHP_FILES" ] && [ -z "$STAGED_PRETTIER_FILES" ]; then
+      exit 0
+    fi
+
+    if [ ! -f ".git/hooks/phpcbf_fix_list.log" ]; then
+      touch .git/hooks/phpcbf_fix_list.log
+    fi
+    if [ ! -f ".git/hooks/prettier_fix_list.log" ]; then
+      touch .git/hooks/prettier_fix_list.log
+    fi
+
+    # Initialize FLAG to zero. If there are any errors, it will be set to 1.
+    FLAG=0
+    echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Running Drupal code standard validation on staged files...${NC}"
+
+    if [ -n "$STAGED_PHP_FILES" ]; then
+      # Run the code sniffing on each staged file
+      for FILE in $STAGED_PHP_FILES
+      do
+          PHPCBF_OUTPUT=$($PHPCBF_BIN --dry-run --error-severity=1 --warning-severity=8 --standard="${DRUPAL},${DRUPAL_PRACTICE}" "$FILE")
+          if [ -n "$PHPCBF_OUTPUT" ] && ! echo "$PHPCBF_OUTPUT" | grep -q -e "No fixable errors were found" -e "No violations were found"; then
+            # Write the file name to a temporary .git/hooks log file to be used in post-commit hook
+            echo "$FILE" >> .git/hooks/phpcbf_fix_list.log
+            FLAG=1
+          fi
+      done
+    fi
+
+    # Run Prettier on js, css, md, yml, yaml, and json files
+    if [ -n "$STAGED_PRETTIER_FILES" ]; then
+      # Run Prettier on each staged file
+      for FILE in $STAGED_PRETTIER_FILES
+      do
+        RESULTS=$($PRETTIER_BIN --ignore-unknown --list-different "$FILE" 2>&1)
+        PRETTIER_EXIT_CODE=$?
+
+        # Check if Prettier failed (non-zero exit code indicates error)
+        if [ $PRETTIER_EXIT_CODE -ne 0 ]; then
+          # Check if it's a syntax error
+          if echo "$RESULTS" | grep -q 'SyntaxError'; then
+            echo -e "${RED_BG}[error]${NC} ${RED}Prettier syntax error detected in file: $FILE${NC}"
+            echo -e "${RED}$RESULTS${NC}"
+            FLAG=1
+          else
+            # Non-syntax error from Prettier (e.g., formatting issues)
+            echo "$FILE" >> .git/hooks/prettier_fix_list.log
+            FLAG=1
+          fi
+        fi
+      done
+    fi
+
+    # When FLAG is set to 1, we need to stop the commit action and check/fix errors.
+    if [[ $FLAG -eq 1 ]]; then
+      #set temp variable for post-commit hook to read
+      git config hooks.temp-data "code-standards-violations-exist"
+    else
+      echo -e "${GREEN_BG}[success]${GREEN} No Drupal code standard violations detected${NC}"
+    fi
+  fi
+}
+
+asu_commit_check
