@@ -1,0 +1,34 @@
+{{ attach_library('renovation/banners') }}
+
+<section class="{{ background_color }}">
+    <div class="banner uds-content-align">
+        <div class="banner-icon">
+            <span>
+              {{ icon }}
+            </span>
+        </div>
+        <div class="banner-content">
+            {{ heading }}
+            {{ banner_text }}
+        </div>
+        <div class="banner-buttons">
+            {{ ctas }}
+        </div>
+        <div class="banner-close">
+            <button
+                type="button"
+                class="btn btn-circle btn-circle-alt-black close"
+                aria-label="Close"
+                data-ga-event="modal"
+                data-ga-action="close"
+                data-ga-name="onclick"
+                data-ga-type="click"
+                data-ga-section="{{ title }}"
+                data-ga-region="main content"
+                data-ga-text="close cross"
+            >
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</section>

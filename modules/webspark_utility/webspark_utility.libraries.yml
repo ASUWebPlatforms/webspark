@@ -1,0 +1,7 @@
+select2overrides:
+  version: 2.17.4
+  js:
+    js/select2-overrides.js: {}
+  css:
+    component:
+      css/select2-overrides.css: {}

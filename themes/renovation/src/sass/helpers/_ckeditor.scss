@@ -1,0 +1,114 @@
+span.btn.btn-maroon,
+span.btn.btn-dark {
+  margin-right: 2rem;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  &:visited {
+    color: #fff;
+  }
+
+  &:hover {
+    color: #fff;
+  }
+
+  &:active {
+    color: #fff;
+  }
+}
+
+span.btn.btn-gold,
+span.btn.btn-gray {
+  margin-right: 2rem;
+
+  a {
+    color: #212529;
+    text-decoration: none;
+  }
+
+  &:visited {
+    color: #212529;
+  }
+
+  &:hover {
+    color: #212529;
+  }
+
+  &:active {
+    color: #212529;
+  }
+}
+
+div.copy-divider {
+  height: 0.5rem;
+  max-width: 16rem;
+  margin: 45px 0;
+}
+
+div.copy-divider.gold {
+  background-color: #ffc627;
+}
+
+div.copy-divider.dark {
+  background-color: #212529;
+}
+
+div.copy-divider.maroon {
+  background-color: #8c1d40;
+}
+
+drupal-media {
+  display: inherit !important;
+  margin: 25px 0;
+}
+
+.media-library-item__edit {
+  z-index: 1;
+}
+
+// This property was added because .ck-content hr was overriden current webspark divider.
+hr.copy-divider {
+  height: 0.5rem !important;
+  background-color: #ffc627 !important;
+  max-width: 16rem !important;
+}
+
+a.btn-gold, a.btn-gray {
+  span{
+    color: $uds-color-font-dark-base !important;
+  }
+}
+
+a.btn-maroon, a.btn-dark {
+  span{
+    color: $uds-color-font-light-base !important;
+  }
+}
+
+$marker-yellow: #ffc627;
+
+@mixin mark-background {
+  background-color: transparent;
+  background-position: 100%;
+  background-size: 200% 200%;
+  box-shadow: none;
+  transition: background-position .8s;
+  transition-delay: .2s;
+  padding: 0;
+}
+
+.marker-yellow {
+  background-color: $marker-yellow;
+}
+
+.pen-yellow{
+  background-image: linear-gradient(270deg, transparent 50%, $marker-yellow 0);
+  @include mark-background;
+}
+
+.animate-bg-in-scroll {
+  background-position: 0;
+}
