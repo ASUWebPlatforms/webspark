@@ -1,5 +1,5 @@
 jstree:
-  version: 2.17.4
+  version: 1.x
   css:
     theme:
       jquery-plugin/jstree/dist/themes/default/style.min.css: {}
@@ -9,46 +9,46 @@ jstree:
     - core/jquery
 
 departments_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/departments-field.js: {}
   css:
     theme:
       css/directory-field.css: { weight: 10 }
 asurite_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/asurite-field.js: {}
 add_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/add-field.js: {}
 add_people_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/add-people-field.js: {}
 list_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/list-field.js: {}
 
 expertise_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/expertise-field.js: {}
 
 campus_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/campus-field.js: {}
 
 employee_type_field:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/employee-type-field.js: {}
 
 webdir-core:
-  version: 2.17.4
+  version: 2.16.1
   dependencies:
     - asu_react_integration/reactjs
     - core/jquery
@@ -56,7 +56,7 @@ webdir-core:
     - core/drupalSettings
     - core/once
 search-ui:
-  version: 2.17.4
+  version: 1.0.0
   dependencies:
     - webspark_webdir/webdir-core
   js:

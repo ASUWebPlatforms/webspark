@@ -2,7 +2,7 @@
 # cSpell:ignore simplebox demobox
 
 websparkplugin:
-  version: 2.17.4
+  version: 2.17.2
   js:
     js/build/websparkPlugin.js: { preprocess: false, minified: true }
     /libraries/fontawesome/js/all.min.js: { preprocess: false, minified: true }
@@ -20,7 +20,7 @@ websparkplugin:
 # Loaded in the text format configuration form to provide styling for the icon
 # used in toolbar config.
 admin.websparkplugin:
-  version: 2.17.4
+  version: 2.17.2
   css:
     theme:
       css/websparkplugin.admin.css: { }

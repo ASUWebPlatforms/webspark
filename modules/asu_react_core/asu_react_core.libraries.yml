@@ -1,5 +1,5 @@
 react-core:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - core/jquery
     - core/drupal
@@ -8,49 +8,49 @@ react-core:
   js:
     node_modules/@asu/unity-react-core/dist/unityReactCore.umd.js: {}
 testimonial-carousel:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-carousel-testimonial.js: {}
 image-carousel:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-carousel-image.js: {}
 image_gallery_carousel:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-carousel-image-gallery.js: { }
 card_carousel:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-carousel-card.js: { }
 card-arrangement:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-card-arrangement.js: { }
 testimonial:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-testimonial.js: {}
 card:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:
     js/component-card.js: { }
 testimonial-on-image-background:
-  version: 2.17.4
+  version: 2.17.1
   dependencies:
     - asu_react_core/react-core
   js:

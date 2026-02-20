@@ -1,5 +1,5 @@
 cropper:
-  version: 2.17.4
+  version: 1.x
   css:
     component:
       css/vertical-tabs.css: {}
@@ -8,17 +8,17 @@ cropper:
       css/media-library.css: {}
       css/overrides.css: {}
 modal:
-  version: 2.17.4
+  version: 1.x
   css:
     theme:
       css/modal.css: {}
 dialog-overrides:
-  version: 2.17.4
+  version: 1.x
   css:
     theme:
       css/dialog-overrides.css: {}
 rounded:
-  version: 2.17.4
+  version: 1.x
   css:
     theme:
       css/rounded.css: {}
