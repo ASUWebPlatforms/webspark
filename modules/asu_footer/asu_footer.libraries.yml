@@ -1,0 +1,8 @@
+footer-block:
+  version: 2.17.4
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+  js:
+    js/footer-block.js: {}
