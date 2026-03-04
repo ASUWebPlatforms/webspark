@@ -1,0 +1,24 @@
+cropper:
+  version: 2.17.4
+  css:
+    component:
+      css/vertical-tabs.css: {}
+      css/details.css: {}
+    theme:
+      css/media-library.css: {}
+      css/overrides.css: {}
+modal:
+  version: 2.17.4
+  css:
+    theme:
+      css/modal.css: {}
+dialog-overrides:
+  version: 2.17.4
+  css:
+    theme:
+      css/dialog-overrides.css: {}
+rounded:
+  version: 2.17.4
+  css:
+    theme:
+      css/rounded.css: {}

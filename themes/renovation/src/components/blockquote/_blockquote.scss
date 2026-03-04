@@ -1,0 +1,71 @@
+// @see https://asudev.jira.com/browse/WS2-1731
+.uds-blockquote {
+  p {
+    max-width: none;
+  }
+
+  &.with-image {
+    grid-template-columns: auto auto;
+
+    h3 {
+      margin-top: 0;
+    }
+  }
+
+  .open-quote {
+    width: 40px;
+    height: 32.5px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302.87 245.82"><path style="fill: %238c1d40" d="M113.61,245.82H0V164.56q0-49.34,8.69-77.83T40.84,35.58Q64.29,12.95,100.67,0l22.24,46.9q-34,11.33-48.72,31.54T58.63,132.21h55Zm180,0H180V164.56q0-49.74,8.7-78T221,35.58Q244.65,12.95,280.63,0l22.24,46.9q-34,11.33-48.72,31.54t-15.57,53.77h55Z"/></svg>');
+    background-size: cover;
+  }
+}
+
+.uds-blockquoteAnimated {
+
+  h2 {
+    font-size: 4rem;
+    letter-spacing: -.14rem;
+    line-height: 4.25rem;
+    max-width: 100%;
+    color: #191919;
+  }
+
+  mark {
+    color: #191919;
+  }
+
+  a {
+    color: $black;
+  }
+
+  p {
+    max-width: none;
+  }
+
+  .citation {
+    display: flex;
+
+    .citation-content {
+      display: flex;
+      flex-direction: column;
+    }
+    cite {
+      display: block;
+      font-size: $uds-size-font-medium;
+      font-style: normal;
+
+      &.name {
+        font-weight: 700;
+      }
+
+      &.description {
+        font-weight: 400;
+      }
+    }
+  }
+
+  .citation:before {
+    padding-right: 0.5em;
+    content: '\2014';
+  }
+}
