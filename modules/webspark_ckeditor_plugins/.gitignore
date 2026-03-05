@@ -1,0 +1,9 @@
+# NodeJS projects
+node_modules/
+
+# PHPStorm (IDE) configurations
+.idea/
+
+# macOS system files
+.DS_Store
+.DS_Stor*

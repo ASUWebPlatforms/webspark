@@ -1,0 +1,12 @@
+<div class="uds-card-arrangement {{ class_layout }}">
+  <div class="uds-card-arrangement-content-container {{ text_color }}">
+    {% if heading['#title'] is not empty %}
+      <{{ heading_tag }} class={{ heading_tag == 'h3' ? 'h2' : '' }}>{{ heading }}</{{ heading_tag }}>
+    {% endif %}
+    {{ text }}
+    {{ cta }}
+  </div>
+  <div class="card-arrangement-wrapper uds-card-arrangement-card-container" id="card-arrangement-{{ block_uuid }}">
+    {{ cards }}
+  </div>
+</div>
