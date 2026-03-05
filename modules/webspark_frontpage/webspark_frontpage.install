@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Webspark Frontpage module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * @return void
+ */
+function webspark_frontpage_install(): void {
+  Drupal::configFactory()
+    ->getEditable('system.site')
+    ->set('page.front', '/webspark-frontpage')
+    ->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @return void
+ */
+function webspark_frontpage_uninstall(): void {
+  Drupal::configFactory()
+    ->getEditable('system.site')
+    ->set('page.front', '/node')
+    ->save();
+}

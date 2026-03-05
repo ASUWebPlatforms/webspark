@@ -1,0 +1,7 @@
+name: Webspark CKEditor 5 plugins
+type: module
+description: Module with custom CKEditor 5 plugins
+package: CKEditor 5
+core_version_requirement: ^9 || ^10
+dependencies:
+  - drupal:ckeditor5
