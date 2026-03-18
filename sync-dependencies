@@ -1,0 +1,270 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Define color codes
+GREEN='\033[0;32m'
+GREEN_BG='\033[42m'
+RED='\033[0;31m'
+RED_BG='\033[41m'
+NC='\033[0m' # No Color
+
+#--------------------------------------------------------------------------
+# Functions
+#--------------------------------------------------------------------------
+
+function replace_in_file() {
+  local FUNCTION_NAME=$1
+  local HOOK_TYPE=$2
+  local SOURCE_FILE=$3
+
+  # Extract updated function (remove shebang)
+  sed '1d' "$SOURCE_FILE" > "$TMP_FUNC" || return 1
+  # Replace the existing function in the pre-commit hook with any updates from webspark-dependencies
+  awk -v func_file="$TMP_FUNC" -v FUNCTION_NAME="$FUNCTION_NAME" '
+    BEGIN {
+      # Read the new function into memory
+      while ((getline l < func_file) > 0) {
+        if (new_func != "")
+          new_func = new_func "\n" l
+        else
+          new_func = l
+      }
+      close(func_file)
+    }
+
+    # Detect start of old function
+    $0 ~ "^" FUNCTION_NAME "\\(\\) \\{" {
+      in_func = 1
+      brace_count = 1
+      skip_next_blank = 1
+      next
+    }
+
+    # Track braces while inside function
+    in_func {
+      brace_count += gsub(/\{/, "&")
+      brace_count -= gsub(/\}/, "&")
+
+      if (brace_count == 0) {
+        # End of function - insert new version
+        print new_func
+        print ""  # Add one blank line after function
+        in_func = 0
+      }
+      next
+    }
+
+    # Remove function call line
+    $0 ~ "^[[:space:]]*" FUNCTION_NAME "[[:space:]]*$" {
+      skip_next_blank = 1
+      next
+    }
+
+    # Skip blank line after function call if flagged
+    skip_next_blank && /^[[:space:]]*$/ {
+      skip_next_blank = 0
+      next
+    }
+
+    # Reset flag on non-blank line
+    skip_next_blank { skip_next_blank = 0 }
+
+    # Print everything else
+    { print }
+  ' ".git/hooks/${HOOK_TYPE}" > ".git/hooks/${HOOK_TYPE}.tmp" \
+  && mv ".git/hooks/${HOOK_TYPE}.tmp" ".git/hooks/${HOOK_TYPE}"
+
+  # Remove duplicate trailing blank lines
+  sed -i.bak -e :a -e '/^\n*$/{$d;N;ba' -e '}' ".git/hooks/${HOOK_TYPE}" && rm ".git/hooks/${HOOK_TYPE}.bak"
+}
+
+function sync_git_hook() {
+  local HOOK_TYPE=$1
+  local FUNCTION_NAME=$2
+  local DEST=$3
+  local HOOK_FILE=".git/hooks/${HOOK_TYPE}"
+  local SOURCE_FILE="${DEST}scripts/${HOOK_TYPE}"
+
+  if [[ -f "$HOOK_FILE" ]]; then
+    if grep -q "$FUNCTION_NAME" "$HOOK_FILE"; then
+      replace_in_file "$FUNCTION_NAME" "$HOOK_TYPE" "$SOURCE_FILE" && \
+      chmod +x "$HOOK_FILE" && \
+      rm "$SOURCE_FILE"
+      return 0
+    else
+      sed '1d' "$SOURCE_FILE" >> "$HOOK_FILE" && \
+      chmod +x "$HOOK_FILE" && \
+      rm "$SOURCE_FILE"
+      return 0
+    fi
+  else
+    cp "$SOURCE_FILE" "$HOOK_FILE" && \
+    chmod +x "$HOOK_FILE" && \
+    rm "$SOURCE_FILE"
+  fi
+}
+
+function sync_prettierfiles() {
+  local DEST=$1
+  local IGNORE_SOURCE="${DEST}scripts/.prettierignore"
+  local RC_SOURCE="${DEST}scripts/.prettierrc.json"
+
+  cp "$IGNORE_SOURCE" .prettierignore && \
+  rm "$IGNORE_SOURCE"
+  cp "$RC_SOURCE" .prettierrc.json && \
+  rm "$RC_SOURCE"
+}
+
+function fix_gitignore() {
+  local ROOT_GITIGNORE=".gitignore"
+  local GITIGNORE_SOURCE="${DEST}scripts/.root-gitignore"
+
+  if [[ -f "$ROOT_GITIGNORE" ]]; then
+    # Grep the root gitignore file for /node_modules rule
+    if ! grep -qE "\/node_modules" "$ROOT_GITIGNORE"; then
+      # If not found, append the contents of the source gitignore to the root gitignore
+      cat <<EOF >> "$ROOT_GITIGNORE"
+
+# Ignore root node_modules folder.
+/node_modules
+EOF
+    else
+      echo "node_modules rule already exists in root .gitignore, skipping addition."
+    fi
+    # Grep the root gitignore file for package.json rule
+    if ! grep -qE "\!/package\.json" "$ROOT_GITIGNORE"; then
+          cat <<EOF >> "$ROOT_GITIGNORE"
+
+# Allow package.json in root folder.
+!/package.json
+EOF
+    else
+      echo "webspark package.json rule already exists in root .gitignore, skipping addition."
+    fi
+    rm "$GITIGNORE_SOURCE"
+    return 0
+  else
+    echo "Root .gitignore does not exist. Creating now."
+    cp "$GITIGNORE_SOURCE" "$ROOT_GITIGNORE" && \
+    rm "$GITIGNORE_SOURCE"
+  fi
+}
+
+function ensure_package_json() {
+  local DEST=$1
+  local PACKAGE_SOURCE="${DEST}scripts/package.json"
+  local PACKAGE_DEST="package.json"
+
+  if [[ -f "$PACKAGE_DEST" ]]; then
+    # Grep the existing package.json for a prettier entry
+    if ! grep -qE "\"prettier\"" "$PACKAGE_DEST"; then
+      # If not found, insert the contents of the source package.json dependencies into the devDependencies section of the root package.json
+      # First, extract the dependencies from the source package.json
+      local PRETTIER_DEPS=$(jq '.devDependencies | {prettier: .prettier}' "$PACKAGE_SOURCE")
+      # Then, merge them into the root package.json
+      jq --argjson newDeps "$PRETTIER_DEPS" '.devDependencies += $newDeps' "$PACKAGE_DEST" > "${PACKAGE_DEST}.tmp" && \
+      mv "${PACKAGE_DEST}.tmp" "$PACKAGE_DEST" && \
+      rm "$PACKAGE_SOURCE"
+    else
+      echo "Prettier entry already exists in package.json, skipping addition."
+      rm "$PACKAGE_SOURCE"
+    fi
+  else
+    cp "$PACKAGE_SOURCE" "$PACKAGE_DEST" && \
+    rm "$PACKAGE_SOURCE"
+  fi
+}
+
+function sync_core_dev() {
+  # Check which version of drupal/core-recommended is installed in composer.lock
+  local CORE_RECOMMENDED_VERSION=$(jq -r '.packages[] | select(.name == "drupal/core-recommended") | .version' composer.lock)
+  if [[ -n "$CORE_RECOMMENDED_VERSION" ]]; then
+    # If drupal/core-recommended is found, add drupal/core-dev with the same version to composer.json
+    if ! grep -qE "\"drupal/core-dev\"" composer.json; then
+      jq --arg version "$CORE_RECOMMENDED_VERSION" '."require-dev" += {"drupal/core-dev": $version}' composer.json > composer.json.tmp && \
+      mv composer.json.tmp composer.json
+    else
+      # If drupal/core-dev is already in composer.json, check if the version matches drupal/core-recommended
+      local CORE_DEV_VERSION=$(jq -r '.["require-dev"]["drupal/core-dev"]' composer.json)
+      if [[ "$CORE_DEV_VERSION" != "$CORE_RECOMMENDED_VERSION" ]]; then
+        echo "drupal/core-dev does not match drupal/core-recommended. Updating drupal/core-dev version."
+        jq --arg version "$CORE_RECOMMENDED_VERSION" '."require-dev"["drupal/core-dev"] = $version' composer.json > composer.json.tmp && \
+        mv composer.json.tmp composer.json
+      fi
+    fi
+  else
+    echo -e "${RED_BG}error${RED} drupal/core-recommended not found in composer.lock. Please ensure drupal/core-recommended is installed and try again.${NC}"
+  fi
+}
+
+#--------------------------------------------------------------------------
+# Main Script
+#--------------------------------------------------------------------------
+
+# Run locally only (not on Acquia Cloud and not on CI)
+if [ -z "${AH_SITE_ENVIRONMENT:-}" ] && [ -z "${CI:-}" ]; then
+  TMP_FUNC=$(mktemp)
+  trap 'rm -f "$TMP_FUNC"' EXIT
+
+  SOURCE="docroot/profiles/contrib/webspark/sample-webspark-dependencies/"
+  DEST="webspark-dependencies/"
+
+  echo "Starting dependency sync..."
+
+  # Ensure destination exists.
+  if [[ ! -d "$DEST" ]]; then
+    echo "Destination directory does not exist. Creating now."
+    mkdir -p "$DEST"
+  fi
+
+  # Sync using rsync.
+  if [[ ! -d "$SOURCE" ]]; then
+    echo -e "${RED_BG}error${RED} Source directory $SOURCE does not exist. Exiting.${NC}"
+    exit 1
+  fi
+  rsync -avq --delete "$SOURCE" "$DEST"
+
+  # Replace namespaces inside all PHP files.
+  find "$DEST" -type f -name "*.php" \
+    -exec sed -i.bak 's/namespace SampleWebsparkCustomScripts;/namespace WebsparkCustomScripts;/g' {} \;
+
+  find "$DEST" -type f -name "*.php.bak" -delete
+
+  # Sync git hooks
+  if sync_git_hook "pre-commit" "asu_commit_check" "$DEST"; then
+    echo -e "${GREEN}Pre-commit hook synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} Pre-commit hook sync failed."
+  fi
+
+  if sync_git_hook "post-commit" "asu_post_commit_actions" "$DEST"; then
+    echo -e "${GREEN}Post-commit hook synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} Post-commit hook sync failed.${NC}"
+  fi
+
+  if sync_prettierfiles "$DEST"; then
+    echo -e "${GREEN}Prettier files synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} Prettier files sync failed.${NC}"
+  fi
+
+  if fix_gitignore; then
+    echo -e "${GREEN}.gitignore synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} .gitignore sync failed."
+  fi
+
+  if ensure_package_json "$DEST"; then
+    echo -e "${GREEN}package.json synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} package.json sync failed.${NC}"
+  fi
+  if sync_core_dev; then
+    echo -e "${GREEN}drupal/core-dev synced successfully.${NC}"
+  else
+    echo -e "${RED_BG}error${RED} drupal/core-dev sync failed.${NC}"
+  fi
+
+  echo -e "${GREEN}Webspark dependencies directory synced successfully.${NC}"
+fi

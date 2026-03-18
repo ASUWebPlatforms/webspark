@@ -1,0 +1,41 @@
+.history/
+.cache
+
+# NodeJS projects
+## Top-level
+node_modules/.cache
+node_modules/*
+
+!node_modules/@asu
+node_modules/@asu/*
+!node_modules/@asu/component-cookie-consent
+node_modules/@asu/component-cookie-consent/*
+!node_modules/@asu/component-cookie-consent/dist
+node_modules/@asu/component-cookie-consent/dist/*
+!node_modules/@asu/component-header-footer
+node_modules/@asu/component-header-footer/*
+!node_modules/@asu/component-header-footer/dist
+node_modules/@asu/component-header-footer/dist/*
+!node_modules/@asu/component-header-footer/dist/asuHeaderFooter.umd.js
+!node_modules/@asu/component-header-footer/dist/assets
+!node_modules/@asu/component-header-footer/dist/assets/img
+!node_modules/@asu/component-header-footer/dist/assets/img/arizona-state-university-logo-vertical.png
+!node_modules/@asu/component-header-footer/dist/assets/img/arizona-state-university-logo.png
+!node_modules/@asu/component-header-footer/dist/assets/img/asu-starbucks.png
+!node_modules/@asu/component-header-footer/dist/assets/img/endorsedLogo.png
+!node_modules/@asu/component-header-footer/dist/assets/img/innovationLogo.png
+!node_modules/@asu/component-header-footer/dist/assets/images
+!node_modules/@asu/component-header-footer/dist/assets/images/endorsedLogo.png
+!node_modules/@asu/component-header-footer/dist/assets/images/innovationLogo.png
+
+# Drupal/external libraries
+/vendor/
+
+# PHPStorm (IDE) configurations
+.idea/
+
+# Config management script output
+/config/_*changes.diff
+/config/**/_diff_commands.bash
+*APPLICABLE.patch
+.DS_Store*

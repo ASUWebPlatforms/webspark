@@ -1,0 +1,13 @@
+name: Web Directory Component
+description: Contains the Web Directory Component
+package: ASU
+
+type: module
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+dependencies:
+  - drupal:field_states_ui
+  - drupal:maxlength
+  - drupal:field_group
+  - drupal:options
+  - drupal:block_content
