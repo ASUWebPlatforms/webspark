@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@asu/component-events": "3.0.1"
+  }
+}
