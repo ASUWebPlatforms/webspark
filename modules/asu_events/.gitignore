@@ -1,0 +1,26 @@
+# NodeJS projects
+!node_modules
+node_modules/*
+
+##
+node_modules/@asu
+!node_modules/@asu
+node_modules/@asu/*
+!node_modules/@asu/component-events
+node_modules/@asu/component-events/*
+!node_modules/@asu/component-events/dist
+node_modules/@asu/component-events/dist/*
+!node_modules/@asu/component-events/dist/asuEvents.umd.js
+
+# Drupal/external libraries
+/vendor/
+
+# PHPStorm (IDE) configurations
+.idea/
+
+# Config management script output
+/config/_*changes.diff
+/config/**/_diff_commands.bash
+*APPLICABLE.patch
+.DS_Store
+.DS_Stor*
