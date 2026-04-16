@@ -1,0 +1,164 @@
+#!/bin/bash
+asu_post_commit_actions() {
+  # Handle script interruption (Ctrl+C)
+  trap '
+    [ -f .git/hooks/phpcbf_fix_list.log ] && rm .git/hooks/phpcbf_fix_list.log
+    [ -f .git/hooks/prettier_fix_list.log ] && rm .git/hooks/prettier_fix_list.log
+    echo -e "\n[info] Script interrupted by user. Exiting."
+    exit 130
+  ' INT
+
+  # Only run locally (not on Acquia Cloud and not on CI)
+  if [ -z "${AH_SITE_ENVIRONMENT:-}" ] && [ -z "${CI:-}" ]; then
+    #check if config hooks.temp-data exists
+    TEMP_DATA=$(git config --get hooks.temp-data)
+
+    if [ "$TEMP_DATA" != "code-standards-violations-exist" ]; then
+      exit 0
+    fi
+    #remove the temp config data
+    git config --unset hooks.temp-data
+
+    # Define color codes
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    YELLOW_BG='\033[43m'
+    RED_BG='\033[41m'
+    GREEN_BG='\033[42m'
+    NC='\033[0m' # No Color
+    BLACK='\033[0;30m'
+
+    PHPCBF_FIX_LIST_FILE=".git/hooks/phpcbf_fix_list.log"
+    PRETTIER_FIX_LIST_FILE=".git/hooks/prettier_fix_list.log"
+    #check if the phpcbf_fix_list.log and prettier_fix_list.log files exist
+    if  [ ! -f "$PHPCBF_FIX_LIST_FILE" ] && [ ! -f "$PRETTIER_FIX_LIST_FILE" ] ; then
+      exit 0
+    fi
+
+    # extract the phpcbf fix list and save into an array
+    PHPCBF_FIX_LIST=()
+    if [ -f "$PHPCBF_FIX_LIST_FILE" ]; then
+      while IFS= read -r line || [ -n "$line" ]; do
+        PHPCBF_FIX_LIST+=("$line")
+      done < "$PHPCBF_FIX_LIST_FILE"
+      rm "$PHPCBF_FIX_LIST_FILE"
+    fi
+
+    # extract the prettier fix list and save into an array
+    PRETTIER_FIX_LIST=()
+    if [ -f "$PRETTIER_FIX_LIST_FILE" ]; then
+      while IFS= read -r line || [ -n "$line" ]; do
+        PRETTIER_FIX_LIST+=("$line")
+      done < "$PRETTIER_FIX_LIST_FILE"
+      rm "$PRETTIER_FIX_LIST_FILE"
+    fi
+
+    PROJECT_PATH=$(git rev-parse --show-toplevel)
+    PHPCS_BIN="$PROJECT_PATH/vendor/bin/phpcs"
+    PHPCBF_BIN="$PROJECT_PATH/vendor/bin/phpcbf"
+    DRUPAL="$PROJECT_PATH/vendor/drupal/coder/coder_sniffer/Drupal"
+    DRUPAL_PRACTICE="$PROJECT_PATH/vendor/drupal/coder/coder_sniffer/DrupalPractice"
+    PRETTIER_BIN="$PROJECT_PATH/node_modules/.bin/prettier"
+    FIXED_FILES=0
+    PHPCBF_FILES=${#PHPCBF_FIX_LIST[@]}
+    echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Number of PHPCBF files to process: ${NC}$PHPCBF_FILES"
+    PRETTIER_FILES=${#PRETTIER_FIX_LIST[@]}
+    echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Number of PRETTIER files to process: ${NC}$PRETTIER_FILES"
+
+    # Run Prettier on js, css, md, yml, yaml, and json files
+    if [ -n "$PRETTIER_FIX_LIST" ]; then
+      echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Running Prettier on applicable staged files...${NC}"
+      JS_LOOP_COUNTER=0
+      # Run Prettier on each staged JS file
+      for FILE in "${PRETTIER_FIX_LIST[@]}"
+      do
+        JS_LOOP_COUNTER=$((JS_LOOP_COUNTER + 1))
+        $PRETTIER_BIN --ignore-unknown --write "$FILE"
+        git add "$FILE"
+        FIXED_FILES=$((FIXED_FILES + 1))
+      done
+    fi
+
+    if [ -n "$PHPCBF_FIX_LIST" ]; then
+      # Run the code sniffing on each staged file
+
+      LOOP_COUNTER=0
+      for FILE in "${PHPCBF_FIX_LIST[@]}"
+      do
+          LOOP_COUNTER=$((LOOP_COUNTER + 1))
+          echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Running PHP Code Beautifier and Fixer on file $LOOP_COUNTER of $PHPCBF_FILES: ${NC}$FILE"
+          PHPCBF_OUTPUT=$($PHPCBF_BIN --error-severity=1 --warning-severity=8 --standard="${DRUPAL},${DRUPAL_PRACTICE}" "$FILE")
+          # if there is an output and it does not contain "No fixable errors were found" or "No violations were found"
+          if [ -n "$PHPCBF_OUTPUT" ] && ! echo "$PHPCBF_OUTPUT" | grep -q -e "No fixable errors were found" -e "No violations were found"; then
+              # Find the column number for REMAINING
+              REMAINING_COL=$(awk '/REMAINING/ {for(i=1;i<=NF;i++) if($i=="REMAINING") print i}' <<< "$PHPCBF_OUTPUT")
+              # Check if any value in the REMAINING column is greater than 0
+              if [ -n "$REMAINING_COL" ] && awk -v col="$REMAINING_COL" 'NR>1 && NF>=col {if ($(col)+0 > 0) found=1} END {exit !found}' <<< "$PHPCBF_OUTPUT"; then
+                SCAN_OUTPUT=$($PHPCS_BIN --error-severity=1 --warning-severity=8 --standard="${DRUPAL},${DRUPAL_PRACTICE}" "$FILE" | grep -v "Fixed" | grep -v "Time:" | grep -v "FILE:")
+                git add "$FILE"
+                echo -e ""
+                echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} PHP Code Beautifier and Fixer automatically fixed coding standards violations in:${NC}"
+                echo -e "$FILE"
+                echo -e "$PHPCBF_OUTPUT"
+                echo -e ""
+                echo -e "${RED_BG}[error]${RED} The following errors still remain: ${NC}"
+                echo -e "$SCAN_OUTPUT"
+                echo -e ""
+                echo -e "${RED_BG}[error]${RED} Please fix the remaining violations, re-stage them (via git add), and then try committing again.${NC}"
+                echo -e ""
+              else
+                git add "$FILE"
+                echo -e ""
+                echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} PHP Code Beautifier and Fixer addressed coding standards violations in:${NC}"
+                echo -e "$FILE"
+                echo -e ""
+                echo -e "Code that was fixed:"
+                echo -e "------------------------------------"
+                echo -e "$PHPCBF_OUTPUT"
+              fi
+            FIXED_FILES=$((FIXED_FILES + 1))
+          else
+            if [ -n "$PHPCBF_OUTPUT" ] && echo "$PHPCBF_OUTPUT" | grep -q "No fixable errors were found"; then
+              SCAN_OUTPUT=$($PHPCS_BIN --error-severity=1 --warning-severity=8 --standard="${DRUPAL},${DRUPAL_PRACTICE}" "$FILE" | grep -v "Fixed" | grep -v "Time:" | grep -v "FILE:")
+              if [ -n "$SCAN_OUTPUT" ]; then
+                echo -e ""
+                echo -e "${RED_BG}[error]${RED} PHP CodeSniffer found Drupal coding standards violations in:${NC}"
+                echo -e "$FILE"
+                echo -e ""
+                echo -e "Code that needs to be fixed:"
+                echo -e "------------------------------------"
+                echo -e "$SCAN_OUTPUT"
+                echo -e ""
+                echo -e "${RED_BG}[error]${RED} Please fix the violations, re-stage them (via git add), and then try committing again.${NC}"
+                echo -e ""
+              fi
+            fi
+          fi
+      done
+    fi
+
+    if [ "$FIXED_FILES" -eq 0 ]; then
+      echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} No files were automatically fixed to match Drupal coding standards.${NC}"
+      exit 0
+    fi
+
+    STAGED_COUNT=$(git diff --cached --name-only | wc -l)
+    if [ "$STAGED_COUNT" -eq 0 ]; then
+      echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} No files were staged for auto-fix commit${NC}"
+      exit 0
+    fi
+
+    # Commit the changes made by phpcbf and prettier without triggering hooks again
+    SKIP_LINT="true" git commit -m "Auto-fix Drupal coding standards violations"
+
+    PLFILES="files"
+    if [ "$FIXED_FILES" -eq 1 ]; then
+      PLFILES="file"
+    fi
+
+    echo -e "${BLACK}${YELLOW_BG}[info]${YELLOW} Automatically fixed ${NC}${FIXED_FILES}${YELLOW} $PLFILES to match Drupal coding standards.${NC}"
+  fi
+}
+
+asu_post_commit_actions
