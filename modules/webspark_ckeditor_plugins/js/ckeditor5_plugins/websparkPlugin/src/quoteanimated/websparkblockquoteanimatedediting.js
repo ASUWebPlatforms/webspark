@@ -1,6 +1,6 @@
-import { Plugin } from "ckeditor5/src/core";
-import { toWidget, toWidgetEditable, Widget } from "ckeditor5/src/widget";
-import InsertWebsparkBlockquoteAnimatedCommand from "./insertwebsparkblockquoteanimatedcommand";
+import { Plugin } from 'ckeditor5/src/core';
+import { toWidget, toWidgetEditable, Widget } from 'ckeditor5/src/widget';
+import InsertWebsparkBlockquoteAnimatedCommand from './insertwebsparkblockquoteanimatedcommand';
 
 /**
  * CKEditor 5 plugins do not work directly with the DOM. They are defined as
@@ -29,8 +29,8 @@ export default class WebsparkBlockquoteAnimatedEditing extends Plugin {
     this._defineSchema();
     this._defineConverters();
     this.editor.commands.add(
-      "insertWebsparkBlockquoteAnimated",
-      new InsertWebsparkBlockquoteAnimatedCommand(this.editor)
+      'insertWebsparkBlockquoteAnimated',
+      new InsertWebsparkBlockquoteAnimatedCommand(this.editor),
     );
   }
 
@@ -47,52 +47,52 @@ export default class WebsparkBlockquoteAnimatedEditing extends Plugin {
     // Schemas are registered via the central `editor` object.
     const schema = this.editor.model.schema;
 
-    schema.register("websparkBlockquoteAnimated", {
+    schema.register('websparkBlockquoteAnimated', {
       isObject: true,
-      allowWhere: "$block",
+      allowWhere: '$block',
     });
 
-    schema.register("websparkBlockquoteAnimatedSvg", {
+    schema.register('websparkBlockquoteAnimatedSvg', {
       isObject: true,
-      allowIn: "websparkBlockquoteAnimated",
-      allowContentOf: "$block",
-      allowAttributes: ["role", "title", "viewBox", "xmlns"],
+      allowIn: 'websparkBlockquoteAnimated',
+      allowContentOf: '$block',
+      allowAttributes: ['role', 'title', 'viewBox', 'xmlns'],
     });
 
-    schema.register("websparkBlockquoteAnimatedContainer", {
+    schema.register('websparkBlockquoteAnimatedContainer', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimated",
-      allowContentOf: "$block",
+      allowIn: 'websparkBlockquoteAnimated',
+      allowContentOf: '$block',
     });
 
-    schema.register("websparkBlockquoteAnimatedTitle", {
+    schema.register('websparkBlockquoteAnimatedTitle', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimatedContainer",
-      allowContentOf: "$block",
+      allowIn: 'websparkBlockquoteAnimatedContainer',
+      allowContentOf: '$block',
     });
 
-    schema.register("websparkBlockquoteAnimatedParagraph", {
+    schema.register('websparkBlockquoteAnimatedParagraph', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimatedContainer",
-      allowContentOf: "$block",
+      allowIn: 'websparkBlockquoteAnimatedContainer',
+      allowContentOf: '$block',
     });
 
-    schema.register("websparkBlockquoteAnimatedCitation", {
+    schema.register('websparkBlockquoteAnimatedCitation', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimatedContainer",
-      allowContentOf: "$text",
+      allowIn: 'websparkBlockquoteAnimatedContainer',
+      allowContentOf: '$text',
     });
 
-    schema.register("websparkBlockquoteAnimatedCitationName", {
+    schema.register('websparkBlockquoteAnimatedCitationName', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimatedCitation",
-      allowContentOf: "$block",
+      allowIn: 'websparkBlockquoteAnimatedCitation',
+      allowContentOf: '$block',
     });
 
-    schema.register("websparkBlockquoteAnimatedCitationDescription", {
+    schema.register('websparkBlockquoteAnimatedCitationDescription', {
       isLimit: true,
-      allowIn: "websparkBlockquoteAnimatedCitation",
-      allowContentOf: "$block",
+      allowIn: 'websparkBlockquoteAnimatedCitation',
+      allowContentOf: '$block',
     });
   }
 
@@ -103,132 +103,132 @@ export default class WebsparkBlockquoteAnimatedEditing extends Plugin {
   _defineConverters() {
     // Converters are registered via the central editor object.
     const { conversion } = this.editor;
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationName",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationName',
       view: {
-        name: "cite",
-        classes: "name",
+        name: 'cite',
+        classes: 'name',
       },
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationName",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationName',
       view: {
-        name: "cite",
-        classes: "name",
+        name: 'cite',
+        classes: 'name',
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationName",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationName',
       view: (_modelElement, { writer }) => {
-        const div = writer.createEditableElement("cite", {
-          class: "name",
+        const div = writer.createEditableElement('cite', {
+          class: 'name',
         });
 
         return toWidgetEditable(div, writer);
       },
     });
 
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationDescription",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationDescription',
       view: {
-        name: "cite",
-        classes: "description",
+        name: 'cite',
+        classes: 'description',
       },
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationDescription",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationDescription',
       view: {
-        name: "cite",
-        classes: "description",
+        name: 'cite',
+        classes: 'description',
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitationDescription",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitationDescription',
       view: (_modelElement, { writer }) => {
-        const div = writer.createEditableElement("cite", {
-          class: "description",
+        const div = writer.createEditableElement('cite', {
+          class: 'description',
         });
 
         return toWidgetEditable(div, writer);
       },
     });
 
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedCitation",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedCitation',
       view: {
-        name: "div",
-        classes: "citation",
+        name: 'div',
+        classes: 'citation',
       },
     });
 
-    conversion.for("dataDowncast").elementToStructure({
-      model: "websparkBlockquoteAnimatedCitation",
+    conversion.for('dataDowncast').elementToStructure({
+      model: 'websparkBlockquoteAnimatedCitation',
       view: (modelElement, conversionApi) => {
         const { writer } = conversionApi;
         const divViewElement = writer.createContainerElement(
-          "div",
-          { class: "citation-content" },
-          [writer.createSlot()]
+          'div',
+          { class: 'citation-content' },
+          [writer.createSlot()],
         );
 
-        return writer.createContainerElement("div", { class: "citation" }, [
+        return writer.createContainerElement('div', { class: 'citation' }, [
           divViewElement,
         ]);
       },
     });
 
-    conversion.for("editingDowncast").elementToStructure({
-      model: "websparkBlockquoteAnimatedCitation",
+    conversion.for('editingDowncast').elementToStructure({
+      model: 'websparkBlockquoteAnimatedCitation',
       view: (modelElement, conversionApi) => {
         const { writer } = conversionApi;
         const divViewElement = writer.createContainerElement(
-          "div",
-          { class: "citation-content" },
-          [writer.createSlot()]
+          'div',
+          { class: 'citation-content' },
+          [writer.createSlot()],
         );
 
-        return writer.createContainerElement("div", { class: "citation" }, [
+        return writer.createContainerElement('div', { class: 'citation' }, [
           divViewElement,
         ]);
       },
     });
 
     // New format: <h3 class="h1"> (semantic h3, styled as h1).
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedParagraph",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedParagraph',
       view: {
-        name: "h3",
-        classes: "h1",
+        name: 'h3',
+        classes: 'h1',
       },
-      converterPriority: "high",
+      converterPriority: 'high',
     });
 
     // Legacy format: plain <h2> (backward compatibility for existing content).
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedParagraph",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedParagraph',
       view: {
-        name: "h2",
+        name: 'h2',
       },
-      converterPriority: "low",
+      converterPriority: 'low',
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedParagraph",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedParagraph',
       view: {
-        name: "h3",
-        classes: "h1",
+        name: 'h3',
+        classes: 'h1',
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedParagraph",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedParagraph',
       view: (_modelElement, { writer }) => {
-        const paragraphElement = writer.createEditableElement("h3", {
-          class: "h1",
+        const paragraphElement = writer.createEditableElement('h3', {
+          class: 'h1',
         });
         return toWidgetEditable(paragraphElement, writer);
       },
@@ -236,95 +236,95 @@ export default class WebsparkBlockquoteAnimatedEditing extends Plugin {
 
     //---------
     // New format: <h2 class="h4"> (semantic h2, styled as h4).
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedTitle",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedTitle',
       view: {
-        name: "h2",
-        classes: "h4",
+        name: 'h2',
+        classes: 'h4',
       },
-      converterPriority: "high",
+      converterPriority: 'high',
     });
 
     // Legacy format: plain <h4> (backward compatibility for existing content).
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedTitle",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedTitle',
       view: {
-        name: "h4",
+        name: 'h4',
       },
-      converterPriority: "low",
+      converterPriority: 'low',
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedTitle",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedTitle',
       view: {
-        name: "h2",
-        classes: "h4",
+        name: 'h2',
+        classes: 'h4',
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedTitle",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedTitle',
       view: (_modelElement, { writer }) => {
-        const paragraphElement = writer.createEditableElement("h2", {
-          class: "h4",
+        const paragraphElement = writer.createEditableElement('h2', {
+          class: 'h4',
         });
         return toWidgetEditable(paragraphElement, writer);
       },
     });
     //---------
 
-    conversion.for("upcast").elementToElement({
-      model: "websparkBlockquoteAnimatedContainer",
+    conversion.for('upcast').elementToElement({
+      model: 'websparkBlockquoteAnimatedContainer',
       view: {
-        name: "blockquote",
+        name: 'blockquote',
       },
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedContainer",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedContainer',
       view: {
-        name: "blockquote",
+        name: 'blockquote',
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimatedContainer",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimatedContainer',
       view: (_modelElement, { writer }) => {
         const blockquoteAnimated = writer.createEditableElement(
-          "blockquote",
-          {}
+          'blockquote',
+          {},
         );
 
         return toWidgetEditable(blockquoteAnimated, writer);
       },
     });
 
-    conversion.for("upcast").elementToElement({
+    conversion.for('upcast').elementToElement({
       view: {
-        name: "div",
-        classes: ["uds-blockquoteAnimated", "accent-maroon"],
+        name: 'div',
+        classes: ['uds-blockquoteAnimated', 'accent-maroon'],
       },
       model: (viewElement, { writer }) => {
-        return writer.createElement("websparkBlockquoteAnimated", {});
+        return writer.createElement('websparkBlockquoteAnimated', {});
       },
     });
 
-    conversion.for("dataDowncast").elementToElement({
-      model: "websparkBlockquoteAnimated",
+    conversion.for('dataDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimated',
       view: (modelElement, { writer }) => {
-        return writer.createContainerElement("div", {
+        return writer.createContainerElement('div', {
           class: `uds-blockquoteAnimated accent-maroon`,
         });
       },
     });
 
-    conversion.for("editingDowncast").elementToElement({
-      model: "websparkBlockquoteAnimated",
+    conversion.for('editingDowncast').elementToElement({
+      model: 'websparkBlockquoteAnimated',
       view: (modelElement, { writer }) => {
-        const divBQ = writer.createContainerElement("div", {
+        const divBQ = writer.createContainerElement('div', {
           class: `uds-blockquoteAnimated accent-maroon`,
         });
-        return toWidget(divBQ, writer, { label: "BlockQuote Animated" });
+        return toWidget(divBQ, writer, { label: 'BlockQuote Animated' });
       },
     });
   }

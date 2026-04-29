@@ -1,6 +1,6 @@
 # Custom module library for general purposes.
 webspark_blocks:
-  version: 2.18.3
+  version: 2.18.4
   css:
     component:
       css/webspark-blocks.css: {}
@@ -8,7 +8,7 @@ webspark_blocks:
     js/card-arrangement.js: {}
 
 anchor_menu:
-  version: 2.18.3
+  version: 2.18.4
   dependencies:
     - asu_brand/components-library
     - core/drupal
