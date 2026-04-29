@@ -1,0 +1,426 @@
+// @see https://asudev.jira.com/browse/WS2-1730
+@import "@asu/unity-bootstrap-theme/src/scss/custom-asu-variables";
+@import "base/mixins";
+
+#drupal-off-canvas-wrapper  {
+  z-index: 1260;
+  // Override OffCanvas font styles within CKEditor.
+  .ck-reset {
+    font-family: Arial, Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
+  }
+
+  .form-text,
+  .form-tel,
+  .form-email,
+  .form-url,
+  .form-search,
+  .form-number,
+  .form-color,
+  .form-file,
+  .form-textarea,
+  .form-date,
+  .form-time {
+    &.description {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      color: #ddd !important;
+      font-size: 10px !important;
+      margin-top: 0 !important;
+      padding-left: 0;
+    }
+  }
+
+  .js-hide {
+    /* Temporarily hide the js-hide class.
+     * See https://www.drupal.org/project/drupal/issues/3121239.
+     */
+    display: none;
+  }
+
+  form {
+    &.layout-builder-configure-block {
+      .media-library-widget {
+        .fieldset-legend::after {
+          background-image: none;
+        }
+
+        .media-library-item--grid {
+          background: none;
+
+          &::before {
+            border: none;
+          }
+
+          .media-library-item__name {
+            color: inherit;
+          }
+
+          .media-library-item__attributes {
+            background: none;
+            bottom: 0.5rem;
+          }
+        }
+      }
+    }
+
+      // Update the color of the required field indicator
+      label {
+        svg {
+          &.uds-field-required {
+            color: rgb(227, 144, 144);
+          }
+          &.svg-inline--fa {
+            height: 8px;
+            margin-bottom: 0.125rem;
+            margin-right: 0.25rem;
+          }
+          font-size: .5rem;
+        }
+        font-size: 1rem;
+        margin-bottom: 0;
+      }
+
+      .form-required {
+        &::after {
+          color: rgb(227, 144, 144);
+        }
+      }
+
+    button.tabledrag-toggle-weight {
+      color: $uds-color-background-info;
+
+      &:hover {
+        color: $uds-color-background-info;
+        font-weight: $uds-font-weight-bold;
+      }
+
+      &:focus {
+        color: $uds-color-background-info;
+        box-shadow: none;
+      }
+    }
+
+    .alert-danger {
+      a {
+        color: $uds-color-base-gray-7;
+        text-decoration: underline;
+      }
+    }
+    select {
+      padding-left: 1rem;
+      padding-right: 1.5rem;
+      padding-inline-end: 1.25rem;
+    }
+  }
+
+  .layout-selection {
+    li {
+      div {
+        color: $uds-color-background-info;
+      }
+    }
+  }
+
+  a {
+    background: inherit;
+    color: $uds-color-background-info;
+  }
+
+  input[type="search"]:not(.js-off-canvas-computed-ignore) {
+    color: $uds-color-base-gray-7;
+
+    &::placeholder {
+      color: $uds-color-base-gray-7;
+    }
+  }
+
+  .description {
+    display: block;
+    &.text-muted {
+      color: inherit !important;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  }
+
+  .banner-green {
+    outline: black 5px solid;
+    background: $uds-color-base-green;
+  }
+
+  .banner-orange {
+    outline: black 5px solid;
+    background: $uds-color-base-orange;
+  }
+
+  .banner-blue {
+    outline: black 5px solid;
+    background: $uds-color-base-blue;
+  }
+
+  .banner-gray {
+    outline: black 5px solid;
+    background: $uds-color-base-gray-2;
+  }
+
+  .banner-black {
+    outline: $uds-color-base-gray-2 5px solid;
+    background: $uds-color-base-gray-7;
+  }
+
+  input {
+    padding: 4px 20px !important;
+    &:focus {
+      border: 1px solid #191919 !important;
+      border-radius: 0;
+      box-shadow: 0 0 0 1px #191919!important;
+      outline: none !important;
+    }
+  }
+
+  th {
+    color: #fff;
+  }
+
+  .form-wrapper + .form-wrapper {
+    margin-top: 0.5rem;
+  }
+
+  .form-wrapper .form-wrapper {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .icons-selector.fip-grey {
+    .fip-icon-block:before {
+      color: #f54848;
+    }
+
+    .selector-search {
+      i {
+        color: #999;
+        top: 3px;
+      }
+
+      .icons-search-input::placeholder {
+        color: #999 !important;
+      }
+    }
+
+    .fip-box {
+      color: #333;
+    }
+
+    .fip-box:hover {
+      color: #000;
+    }
+
+    .selector-pages, .selector-arrows i {
+      color: #999;
+    }
+
+    .selected-icon {
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  fieldset {
+    background: inherit;
+    color: #ddd;
+  }
+
+  .card-header:not(summary) {
+    padding: 0;
+  }
+
+  .js-form-type-checkbox {
+    .description {
+      margin-left: 1rem;
+    }
+  }
+
+  .js-filter-guidelines {
+    font-size: 12px;
+  }
+
+  .webform-element-more .cm-s-default * {
+    color: #ddd;
+  }
+
+  // Fix broken sort handler introduced by "a.tabledrag-handle .handle"
+  // @see https://www.drupal.org/project/thunder_admin/issues/3345482
+  .draggable a.tabledrag-handle .handle {
+    height: 18px;
+    mask: inherit;
+  }
+
+  details {
+    border-width: 2px !important;
+    border-color: $uds-color-base-gray-5 !important;
+  }
+
+  // Add alert styles, since this theme doesn't have bootstrap styles available.
+
+  .alert {
+    color: $uds-color-font-dark-base;
+    display: flex;
+    border-radius: 0;
+    padding: 1rem !important;
+
+    .alert-icon {
+      flex: 0 0 $uds-size-spacing-8;
+      svg {
+        font-size: $uds-size-spacing-4;
+        //margin: 0.25rem 1rem;
+      }
+    }
+    .alert-content {
+      flex: 10;
+      padding: $uds-size-spacing-1 $uds-size-spacing-0;
+    }
+    .alert-close {
+      flex: 1;
+
+      // Edits close button content (i.e. "X" inside bubble)
+      .close
+      {
+        opacity: 1;
+        font-size: 1rem;
+
+        &:hover
+        {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  .alert-warning {
+    background-color: $uds-color-background-warning; /* 33% opacity of official maroon */
+    border-color: $uds-color-alerts-warning;
+  }
+
+  .alert-success {
+    background-color: $uds-color-background-success;
+    border-color: $uds-color-alerts-success;
+  }
+  .alert-info {
+    background-color: $uds-color-background-info;
+    border-color: $uds-color-alerts-info;
+  }
+  .alert-danger {
+    background-color: $uds-color-background-error; /* 20% opacity of official maroon */
+    border-color: $uds-color-alerts-error;
+  }
+
+  .alert:not([class*='alert-']),
+  div[class='alert alert-block'] {
+    /* Catch-all for default alert class */
+    background-color: $uds-color-background-gray;
+    border-color: $uds-color-base-gray-3;
+  }
+
+  // Media Queries
+  .alert {
+    // Mobile tweaks below 576px.
+    @media screen and (max-width: $uds-breakpoint-sm) {
+      // Adjust padding and margins.
+      .alert-icon {
+        flex: 0 0 $uds-size-spacing-6;
+        svg {
+          font-size: $uds-size-spacing-4;
+          //margin: 0.25rem 1rem;
+          margin-top: $uds-size-spacing-2;
+        }
+      }
+      .alert-close {
+        margin-top: -$uds-size-spacing-1;
+        margin-right: -0.75rem; // Magic number.
+      }
+    }
+  }
+
+  .uds-img-rounded {
+    border-radius: 100%;
+
+    img {
+      border: 0;
+      border-radius: 100%;
+    }
+  }
+
+}
+
+body .ui-dialog.ui-widget.ui-widget-content.media-library-widget-modal {
+  z-index: 1501 !important;
+}
+
+.layout-builder-form {
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    background: #efefef;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    left: calc(50% - 400px);
+    z-index: 31;
+    align-items: baseline;
+    border-radius: 20px 20px 0 0;
+    width: 800px;
+  }
+}
+
+.layout-builder__link--add {
+  color: $uds-color-base-gray-6;
+}
+
+.layout-builder__link--remove {
+  @include contrast-icon('ex');
+}
+
+.layout-builder-block {
+  background: none;
+  @include contrast-button('pencil');
+}
+
+.contextual-region {
+  @include contrast-button('pencil');
+}
+
+.layout-builder-discard-changes.confirmation,
+.layout-builder-revert-overrides.confirmation {
+  padding-top: 2.5rem;
+
+  .form-actions {
+    margin-top: 2.5rem;
+  }
+}
+
+form.layout-builder-configure-block .form-check {
+  &.js-form-type-radio {
+    padding: 0;
+  }
+
+  input[type="radio"] {
+    opacity: 1;
+    margin-right: 4px !important;
+
+    & + label:before,
+    & + label:after {
+      content: none;
+    }
+  }
+}
+
+#drupal-off-canvas-wrapper {
+  resize: horizontal;
+  max-width: 100%;
+}

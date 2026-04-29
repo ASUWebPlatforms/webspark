@@ -1,0 +1,24 @@
+{
+  "name": "webspark-ckeditor-plugins",
+  "version": "1.0.0",
+  "description": "Drupal CKEditor 5 integration",
+  "author": "",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "watch": "webpack --mode development --watch",
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "@ckeditor/ckeditor5-dev-utils": "^47.1.1",
+    "ckeditor5": "~47.6.0",
+    "css-loader": "^7.1.4",
+    "raw-loader": "^4.0.2",
+    "terser-webpack-plugin": "^5.4.0",
+    "webpack": "^5.105.4",
+    "webpack-cli": "^7.0.2"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-list": "~47.6.0",
+    "@ckeditor/ckeditor5-table": "~47.6.0"
+  }
+}

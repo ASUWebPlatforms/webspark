@@ -1,0 +1,7 @@
+webspark_frontpage.index:
+  path: '/webspark-frontpage'
+  defaults:
+    _controller: '\Drupal\webspark_frontpage\Controller\WebsparkFrontpageController::index'
+    _title: 'Welcome to Webspark'
+  requirements:
+    _permission: 'access content'
