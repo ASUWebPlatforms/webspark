@@ -1,5 +1,5 @@
 news-component:
-  version: 2.18.4
+  version: 2.18.5
   dependencies:
     - asu_react_integration/reactjs
     - core/jquery

@@ -1,5 +1,5 @@
 style:
-  version: 2.18.4
+  version: 2.18.5
   css:
     theme:
       assets/css/renovation.style.css: {}
@@ -16,7 +16,7 @@ style:
     - core/once
 
 charts_graphs:
-  version: 2.18.4
+  version: 2.18.5
   js:
     src/components/charts-and-graphs/charts-and-graphs.js: {}
   dependencies:
@@ -26,7 +26,7 @@ charts_graphs:
 
 renovation.chartjs:
   remote: https://github.com/chartjs/Chart.js
-  version: 2.18.4
+  version: 2.18.5
   license:
     name: MIT
     url: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md
@@ -35,12 +35,12 @@ renovation.chartjs:
     https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js: { type: external, minified: true }
 
 layout_builder:
-  version: 2.18.4
+  version: 2.18.5
   css:
     theme:
       css/layout-builder.css: {}
 
 messages:
-  version: 2.18.4
+  version: 2.18.5
   js:
     js/messages.js: {}
