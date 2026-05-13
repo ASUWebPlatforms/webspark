@@ -1,0 +1,9 @@
+/* A temporary fix for hero bug WS2-2961. This file & reference to this file in libraries.yml can be removed when Unity fix is merged. */
+div[class^="uds-hero"] .btn::before {
+  content: none;
+}
+/* A temporary fix for visited links in the header and toolbar. This file & reference to this file in libraries.yml can be removed when Unity fix is merged. */
+#asuHeader a:visited,
+#toolbar-administration a:visited {
+  color: rgb(25, 25, 25);
+}
