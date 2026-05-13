@@ -1,0 +1,18 @@
+webdir.settings:
+  title: Web Directory
+  parent: system.admin_config
+  route_name: webdir.settings
+  weight: 1
+
+entity.asu_profile.collection:
+  title: 'Profiles'
+  parent: system.admin_content
+  route_name: entity.asu_profile.collection
+  weight: 10
+
+entity.asu_profile.settings:
+  title: 'Profiles'
+  description: 'Manage profile entities and settings.'
+  parent: system.admin_structure
+  route_name: entity.asu_profile.settings
+  weight: 10

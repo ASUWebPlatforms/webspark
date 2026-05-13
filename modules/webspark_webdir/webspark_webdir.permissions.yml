@@ -1,0 +1,15 @@
+administer asu_profile:
+  title: 'Administer profiles'
+  description: 'Full administration access for profile entities.'
+
+create asu_profile:
+  title: 'Create profiles'
+
+view asu_profile:
+  title: 'View profiles'
+
+edit asu_profile:
+  title: 'Edit profiles'
+
+delete asu_profile:
+  title: 'Delete profiles'
