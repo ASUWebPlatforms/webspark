@@ -1,0 +1,189 @@
+{#
+/**
+ * @file
+ * Template for a Profile entity rendered as a full page.
+ *
+ * Used when viewing the profile at its canonical URL (/profile/{id}).
+ *
+ * Available variables:
+ * - content: All field items for the entity.
+ * - profile: The entity object.
+ * - profile_type: 'local' or 'from_directory'.
+ * - view_mode: The current view mode ('full').
+ * - attributes: HTML attributes for the container element.
+ * - module_path: Path to the webspark_webdir module.
+ * - profile_image_url: URL of the profile image.
+ * - profile_image_alt: Alt text for the profile image.
+ * - image_cache_break: Cache-busting timestamp for remote images.
+ */
+#}
+<article{{ attributes }}>
+  <div class="spacing-top-72 spacing-bottom-36 breakout">
+    <div class="container uds-person-profile webspark-webdir-profile">
+      <div class="profile-img-container">
+        <div class="profile-img-placeholder mb-3">
+          {% if profile_type == 'from_directory' %}
+            <img class="profile-img" src="{{ profile_image_url }}?size=medium&break={{ image_cache_break }}&blankImage2=true" alt="{{ profile_image_alt }}">
+          {% elseif profile_image_url %}
+            <img class="profile-img" src="{{ profile_image_url }}" alt="{{ profile_image_alt }}">
+          {% else %}
+            <img class="profile-img" src="/{{ module_path }}/node_modules/@asu/app-webdir-ui/dist/assets/anon.png" alt="Default profile" />
+          {% endif %}
+        </div>
+        {% if profile.facebook_url.0.uri or profile.linkedin_url.0.uri
+          or profile.x_url.0.uri or profile.personal_website_url.0.uri %}
+          <ul class="person-social-medias">
+            {% if profile.facebook_url.0.uri %}
+              <li>
+                <a
+                  href="{{ profile.facebook_url.0.uri }}"
+                  aria-label="Go to user Facebook profile"
+                  data-ga-event="link"
+                  data-ga-action="click"
+                  data-ga-name="onclick"
+                  data-ga-type="external link"
+                  data-ga-region="main content"
+                  data-ga-section="{{ profile.name.value }}"
+                  data-ga="facebook icon">
+                  <span class="fab fa-facebook-square"></span>
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.linkedin_url.0.uri %}
+              <li>
+                <a
+                  href="{{ profile.linkedin_url.0.uri }}"
+                  aria-label="Go to user Linkedin profile"
+                  data-ga-event="link"
+                  data-ga-action="click"
+                  data-ga-name="onclick"
+                  data-ga-type="external link"
+                  data-ga-region="main content"
+                  data-ga-section="{{ profile.name.value }}"
+                  data-ga="linkedin icon">
+                  <span class="fab fa-linkedin"></span>
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.x_url.0.uri %}
+              <li>
+                <a
+                  href="{{ profile.x_url.0.uri }}"
+                  aria-label="Go to user X / Twitter profile"
+                  data-ga-event="link"
+                  data-ga-action="click"
+                  data-ga-name="onclick"
+                  data-ga-type="external link"
+                  data-ga-region="main content"
+                  data-ga-section="{{ profile.name.value }}"
+                  data-ga="twitter icon">
+                  <span class="fab fa-square-x-twitter"></span>
+                </a>
+              </li>
+            {% endif %}
+            {% if profile.personal_website_url.0.uri %}
+              <li>
+                <a
+                  href="{{ profile.personal_website_url.0.uri }}"
+                  aria-label="Go to user personal website"
+                  data-ga-event="link"
+                  data-ga-action="click"
+                  data-ga-name="onclick"
+                  data-ga-type="external link"
+                  data-ga-region="main content"
+                  data-ga-section="{{ profile.name.value }}"
+                  data-ga="globe icon">
+                  <span class="fas fa-globe"></span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      </div>
+      <div class="person">
+        <h1 class="mt-0 mb-3">{{ profile.name.value }}</h1>
+        <div id="primary-affiliation">
+          <div class="primary-title">{% if profile.title_field.value %}<strong>{{ profile.title_field.value }}</strong>{% endif %}{% if profile.title_field.value and profile.department.value %},{% endif %}</div>
+          <div class="primary-dept">{% if profile.department %} {{ profile.department.value }} {% endif %}</div>
+        </div>
+        <ul class="person-contact-info mt-2 mb-3">
+          {% if profile.email.value %}
+            <li>
+              <div class="contact-row1">
+                <a href="mailto:{{ profile.email.value|lower }}" aria-label="Email user" data-ga-event="link"
+                   data-ga-action="click"
+                   data-ga-name="onclick" data-ga-type="internal link" data-ga-region="main content"
+                   data-ga-section="{{ profile.name.value }}"
+                   data-ga="{{ profile.email.value|lower }}">{{ profile.email.value }}</a>
+              </div>
+            </li>
+          {% endif %}
+
+          {% if profile.phone.value %}
+            <li>
+              <div class="contact-row1">
+                <strong>Phone:</strong> <a href="tel:{{ profile.phone.value }}" aria-label="Call user" data-ga-event="link" data-ga-action="click"
+                                           data-ga-name="onclick" data-ga-type="internal link" data-ga-region="main content"
+                                           data-ga-section="{{ profile.name.value }}" data-ga="{{ profile.phone.value }}">{{ profile.phone.value|replace({"/":"-"}) }}</a>
+              </div>
+            </li>
+          {% endif %}
+
+          {% if profile.fax.value %}
+            <li>
+              <div class="contact-row1">
+                <strong>{{ 'Fax:'|t }}</strong>
+                <a
+                  href="tel:{{ profile.fax.value }}"
+                  aria-label="{{ 'Profile fax number'|t }}"
+                  data-ga-event="link"
+                  data-ga-action="click"
+                  data-ga-name="onclick"
+                  data-ga-type="internal link"
+                  data-ga-region="main content"
+                  data-ga-section="{{ profile.name.value }}"
+                  data-ga="{{ profile.fax.value }}">
+                  {{ profile.fax.value }}
+                </a>
+              </div>
+            </li>
+          {% endif %}
+          {% if profile.email.value and profile.phone.value and not profile.fax.value %}
+            <li class="noheight">&zwnj;</li>
+          {% endif %}
+        </ul>
+        {% if profile.street_address.value %}
+          <ul class="person-contact-info">
+              <li>
+                <div class="contact-row2 mb-2">
+                  <address class="person-address">
+                    <span class="person-street">
+                      {% if profile.street_address.value is not empty %}
+                        {{ profile.street_address.value }}
+                      {% endif %}
+                    </span>
+                    {% if profile.city.value %}
+                      <span class="person-city">
+                  {{ profile.city.value }}{% if profile.state.value %}, {{ profile.state.value }}{% endif %}{% if profile.zip.value %} {{ profile.zip.value }}{% endif %}
+              </span>
+                    {% endif %}
+                  </address>
+                </div>
+              </li>
+            <li class="noheight">&zwnj;</li>
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="bio container spacing-top-48">
+    {% if profile.bio.value %}
+      <div class="bio-content">
+        <div><strong>Bio</strong></div>
+        {{ content.bio }}
+      </div>
+    {% endif %}
+  </div>
+
+</article>
+
