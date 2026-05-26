@@ -1,0 +1,21 @@
+<div class="uds-card-image-and-content">
+  <div
+    {% if image_alt is not empty %}
+      aria-label="{{ image_alt }}"
+    {% else %}
+      aria-hidden="true"
+    {% endif %}
+    role="img"
+    class="uds-card-image-and-content-image-container"
+    style="background-image: linear-gradient(rgba(25, 25, 25, 0) 0%, rgba(25, 25, 25, 0.79) 100%), url({{ image_background }});">
+  </div>
+  <div class="uds-card-image-and-content-content-container uds-content-align">
+    <div class="uds-card-image-and-content-content-container-headline uds-content-align {{ heading_color }}">
+      {{ heading }}
+    </div>
+    <div class="content {{ text_color }}">
+      {{ content }}
+    </div>
+    {{ card }}
+  </div>
+</div>
