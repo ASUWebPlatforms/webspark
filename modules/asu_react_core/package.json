@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@asu/unity-react-core": "1.11.0"
+  },
+  "scripts": {
+    "postinstall": "node patch.js"
+  }
+}

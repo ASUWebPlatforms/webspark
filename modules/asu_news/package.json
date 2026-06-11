@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@asu/component-news": "4.2.1"
+  },
+  "scripts": {
+    "postinstall": "node patch.js"
+  }
+}
