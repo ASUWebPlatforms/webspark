@@ -1,0 +1,102 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a view of cards.
+ *
+ * Available variables:
+ * - title: The title of this group of rows. May be empty.
+ * - view_name: The machine name of the parent view. Needed for data-ga-section. Defined in preprocess function, see webspark_views.module
+ * - options.button_color: defined in CardViewFormat.php, set in UI.
+ * - options.columns: defined in CardViewFormat.php, set in UI.
+ * - rows: A list of the view's row items.
+ *   - attributes: The row's HTML attributes.
+*    - content: The row's content.
+ *   - custom variables defined in preprocess function, see webspark_views.module
+ *      - title
+ *      - img_url
+ *      - img_alt
+ *      - body:
+        - cta: Up to 2 of these can be passed.
+ * - default_row_class: A flag indicating whether default classes should be
+ *   used on rows.
+ *
+ * @see template_preprocess_views_view()
+ *
+ * @ingroup themeable
+ */
+#}
+
+{% if options.columns == 0 %}
+  {% set columns = 'col-12 col-md-6 mb-4' %}
+{% elseif options.columns == 2 %}
+  {% set columns = 'col-12 col-md-6 col-lg-4 col-xl-3 mb-4' %}
+{% else %}
+  {% set columns = 'col-12 col-md-6 col-lg-4 mb-4' %}
+{% endif %}
+{%
+  set container_classes = [
+    'col',
+    columns,
+  ]
+%}
+
+<div class="container">
+  <div class="row row-spaced pt-2 pb-2">
+    {% for row in rows %}
+      <div {{ attributes.addClass(container_classes) }}>
+        <div
+          class="card cards-components"
+          data-testid="card-container"
+        >
+          {% if row.img_url %}
+            <img
+              src={{ row.img_url }}
+              alt={{ row.img_alt }}
+              loading="lazy"
+              decoding="async"
+              fetchpriority="auto"
+              class="card-img-top uds-img borderless"
+              data-testid="card-image"
+            />
+          {% endif %}
+          <div>
+            <div class="card-header" data-testid="card-title">
+              <h3 class="card-title"> {{ row.title }}</h3>
+            </div>
+            {% if row.body %}
+              <div class="card-body" data-testid="card-body">
+                <div>
+                  {{ row.body }}
+                </div>
+              </div>
+            {% endif %}
+            {% if row.links %}
+              <div class="card-buttons">
+                {% for link in row.links %}
+                  <div class="card-button" data-testid="card-button">
+                    <a href={{link.href}}
+                      {% if loop.index == 2 %}
+                        class="btn btn-md {{ options.button_color }}"
+                      {% else %}
+                        class="btn {{ options.button_color }}"
+                      {% endif %}
+                      data-ga="CTA button"
+                      data-ga-name="onclick"
+                      data-ga-event="link"
+                      data-ga-action="click"
+                      data-ga-type="internal link"
+                      data-ga-region="main content"
+                      data-ga-section={{ view_name }}
+                    >
+                      {{ link.text }}
+                    </a>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

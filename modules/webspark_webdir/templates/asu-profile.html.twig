@@ -1,0 +1,172 @@
+{#
+/**
+ * @file
+ * Template for a Profile entity (default / block embed).
+ *
+ * Available variables:
+ * - content: All field items for the entity.
+ * - profile: The entity object.
+ * - profile_type: 'local' or 'from_directory'.
+ * - attributes: HTML attributes for the container element.
+ * - module_path: Path to the webspark_webdir module.
+ * - profile_image_url: URL of the profile image.
+ * - profile_image_alt: Alt text for the profile image.
+ * - app_path_folder: Path to the app-webdir-ui dist folder (for fallback image).
+ * - asurite_id: The ASURITE ID (for remote profiles).
+ * - display_format: 'list' or 'grid'.
+ */
+#}
+
+{# profile_url is set in the preprocess hook. #}
+
+{% set classes = [
+  'uds-person-profile',
+  'mb-4',
+] %}
+
+<div{{ attributes.addClass(classes) }}>
+  <a href="{{ profile_url }}" class="profile-img-container">
+    <div class="profile-img-placeholder">
+      {% if profile_type == 'from_directory' %}
+        <img class="profile-img" src="{{ profile_image_url }}?size=medium&break={{ image_cache_break }}&blankImage2=true" alt="{{ profile_image_alt }}">
+      {% elseif profile_image_url %}
+        <img class="profile-img" src="{{ profile_image_url }}" alt="{{ profile_image_alt }}">
+      {% else %}
+        <img class="profile-img" src="/{{ module_path }}/node_modules/@asu/app-webdir-ui/dist/assets/anon.png" alt="Default profile" />
+      {% endif %}
+    </div>
+  </a>
+  <div class="person">
+    <h3 class="person-name"><a href="{{ profile_url }}">{{ profile.name.value }}</a></h3>
+    <div class="person-profession">
+      {% if profile.title_field.value is not empty %}
+        <h4><span>{{ content.title_field }}</span></h4>
+      {% endif %}
+      {% if profile.department.value is not empty %}
+        <h4><span>{{ content.department }}</span></h4>
+      {% endif %}
+    </div>
+
+    {# Contact info #}
+    {% if profile.email.value is not empty or profile.phone.value is not empty or profile.street_address.value is not empty %}
+    <ul class="person-contact-info">
+      {% if profile.email.value is not empty %}
+      <li>
+        <a
+          href="mailto:{{ profile.email.value }}"
+          aria-label="Email {{ profile.email.value }}"
+          data-ga-name="onclick"
+          data-ga-event="link"
+          data-ga-action="click"
+          data-ga-type="internal link"
+          data-ga-region="main content"
+          data-ga-section="{{ profile.name.value }}"
+        >{{ profile.email.value }}</a>
+      </li>
+      {% endif %}
+      {% if profile.phone.value is not empty %}
+      <li>
+        <a
+          href="tel:{{ profile.phone.value }}"
+          aria-label="Phone {{ profile.phone.value }}"
+          data-ga-name="onclick"
+          data-ga-event="link"
+          data-ga-action="click"
+          data-ga-type="internal link"
+          data-ga-region="main content"
+          data-ga-section="{{ profile.name.value }}"
+        >{{ profile.phone.value }}</a>
+      </li>
+      {% endif %}
+      {% if profile.street_address.value is not empty %}
+      <li>
+        <address class="person-address">
+          <span class="person-street">
+            {% if profile.street_address.value is not empty %}
+              {{ profile.street_address.value }}
+            {% endif %}
+          </span>
+          <span class="person-city">{{ profile.city.value }} {{ profile.state.value }} {{ profile.zip.value }}</span>
+        </address>
+      </li>
+      {% endif %}
+    </ul>
+    {% endif %}
+
+    <div>
+      {% if profile.short_bio.value is not empty %}
+      <p class="person-description">
+        {{ content.short_bio }}
+      </p>
+      {% endif %}
+
+      {# Social media links #}
+      {% if profile.facebook_url.0.uri is not empty or
+            profile.linkedin_url.0.uri is not empty or
+            profile.x_url.0.uri is not empty or
+            profile.personal_website_url.0.uri is not empty %}
+      <ul class="person-social-medias">
+        {% if profile.facebook_url.0.uri is not empty %}
+        <li>
+          <a
+            href="{{ profile.facebook_url.0.uri }}"
+            aria-label="Go to user facebook profile"
+            data-ga-name="onclick"
+            data-ga-event="link"
+            data-ga-action="click"
+            data-ga-type="internal link"
+            data-ga-region="main content"
+            data-ga-section="{{ profile.name.value }}"
+          ><span class="fab fa-facebook-square"></span></a>
+        </li>
+        {% endif %}
+        {% if profile.linkedin_url.0.uri is not empty %}
+        <li>
+          <a
+            href="{{ profile.linkedin_url.0.uri }}"
+            aria-label="Go to user linkedin profile"
+            data-ga-name="onclick"
+            data-ga-event="link"
+            data-ga-action="click"
+            data-ga-type="internal link"
+            data-ga-region="main content"
+            data-ga-section="{{ profile.name.value }}"
+          ><span class="fab fa-linkedin"></span></a>
+        </li>
+        {% endif %}
+        {% if profile.x_url.0.uri is not empty %}
+        <li>
+          <a
+            href="{{ profile.x_url.0.uri }}"
+            aria-label="Go to user X profile"
+            data-ga-name="onclick"
+            data-ga-event="link"
+            data-ga-action="click"
+            data-ga-type="internal link"
+            data-ga-region="main content"
+            data-ga-section="{{ profile.name.value }}"
+          ><span class="fab fa-square-x-twitter"></span></a>
+        </li>
+        {% endif %}
+        {% if profile.personal_website_url.0.uri %}
+        <li>
+          <a
+            href="{{ profile.personal_website_url.0.uri }}"
+            aria-label="Go to user personal website"
+            data-ga-event="link"
+            data-ga-action="click"
+            data-ga-name="onclick"
+            data-ga-type="external link"
+            data-ga-region="main content"
+            data-ga-section="{{ profile.name.value }}"
+            data-ga="globe icon">
+            <span class="fas fa-globe"></span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
