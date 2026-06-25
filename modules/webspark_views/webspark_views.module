@@ -1,0 +1,149 @@
+<?php
+use Drupal\Component\Utility\Html;
+use Symfony\Component\Validator\Constraints\IsNull;
+use Drupal\media\Entity\Media;
+use Drupal\file\Entity\File;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\row\EntityRow;
+use Drupal\Core\Template\Attribute;
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Render\Markup;
+use Drupal\filter\Entity\FilterFormat;
+use Drupal\webspark_views\Plugin\views\style\CardViewFormat;
+use Drupal\Core\Url;
+
+/**
+ * @file
+ * Primary module hooks for Webspark Views module.
+ */
+
+/**
+ * Prepares variables for card view format template.
+ *
+ * Default template: views-view-webspark-card-view-format.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: A View object.
+ */
+
+function template_preprocess_views_view_webspark_card_view_format(&$variables) {
+  $view = $variables['view'];
+  $view_id = $view->id();
+  $rows = $variables['rows'];
+  $style = $view->style_plugin;
+  $options = $style->options;
+  $title = null;
+  $img_url = null;
+  $img_alt = null;
+  $body = null;
+  $links = null;
+
+  // fields configured in style settings
+  if (isset($options['field_mapping'])){
+    $media_field = $options['field_mapping']['media'];
+    $body_field = $options['field_mapping']['body'];
+    $cta_field = $options['field_mapping']['cta'];
+    foreach ($rows as $id => $row) {
+      $variables['rows'][$id] = [];
+      $variables['rows'][$id]['content'] = $row;
+      $entity = $variables['rows'][$id]['content']['#row']->_entity;
+      if ($entity instanceof \Drupal\node\NodeInterface) {
+        $myId = $entity->id();
+        $node = \Drupal::entityTypeManager()->getStorage('node')->load($myId);
+        $title = $node->get('title')->value;
+        if (is_string($media_field) && !empty($media_field)){
+          // card image variables
+          $mid =  $node->get($media_field)->getString();
+          $media = Media::load($mid);
+          if ($media && $media->field_media_image->target_id){
+            $fid = $media->field_media_image->target_id;
+            $img_alt =  $media->field_media_image->alt;
+            $file = File::load($fid);
+            $img_url = $file->createFileUrl();
+          }
+        }
+        if (is_string($body_field) && !empty($body_field)){
+          $bodyField = $node->get($body_field);
+          //checking field for summary, will use if available
+          if (!$bodyField->isEmpty()) {
+            $summary = $node->get($body_field)->summary;
+            if (!empty($summary)) {
+              $bodyRaw = $node->get($body_field)->summary;
+            } else {
+              $bodyRaw = $node->get($body_field)->value;
+            }
+            // Resolve the configured text format for the card body, falling
+            // back gracefully so a missing/disabled format never fatals.
+            $format_id = !empty($options['body_text_format'])
+              ? $options['body_text_format']
+              : CardViewFormat::DEFAULT_BODY_TEXT_FORMAT;
+            $format = FilterFormat::load($format_id);
+            if (!$format || !$format->status()) {
+              $format = FilterFormat::load(CardViewFormat::DEFAULT_BODY_TEXT_FORMAT);
+            }
+            $format_id = $format ? $format->id() : filter_fallback_format();
+
+            // Run the body through the text format so allowed markup is
+            // preserved and sanitized (instead of stripping all tags).
+            $filtered = (string) check_markup($bodyRaw, $format_id);
+
+            // Length guard: trim to 500 chars, then re-balance any tags the
+            // truncation may have chopped so the markup stays valid.
+            if (mb_strlen($filtered) > 500) {
+              $filtered = Unicode::truncate($filtered, 500, TRUE, TRUE);
+              $filtered = Html::normalize($filtered);
+            }
+
+            // check_markup() output is already sanitized; mark it safe so the
+            // template can print it without escaping or a |raw filter.
+            $body = Markup::create($filtered);
+          }
+        }
+        if (is_string($cta_field) && !empty($cta_field)){
+          // loop through first 2 values in CTA field.
+          $links = [];
+          $linkValues = $node->get($cta_field);
+          foreach ($linkValues as $linkValue) {
+            $link = [];
+            $linkString = $linkValue->uri; // not resolvable link for internal links
+            $url_object = Url::fromUri($linkString);
+            $link['href'] = $url_object->toString(); //resolvable
+            if ($linkValue->title){
+              $link['text'] = $linkValue->title;
+            } else {
+              $link['text'] = 'Read More';
+            }
+            $links[] = $link;
+          }
+          // $cta_values = $node->get($cta_field)->getValue();
+          // foreach (array_slice($cta_values, 0, 2) as $linkValue) {
+          //   $link = [];
+          //   $link['href'] = $linkValue['resolvable_uri'];
+          //   if ($linkValue['title']){
+          //     $link['text'] = $linkValue['title'];
+          //   } else {
+          //     $link['text'] = 'Read More';
+          //   }
+          //   $links[] = $link;
+          // }
+        }
+      }
+
+      $variables['rows'][$id]['attributes'] = new Attribute();
+      $variables['rows'][$id]['title'] = $title;
+      $variables['rows'][$id]['img_url'] = $img_url;
+      $variables['rows'][$id]['img_alt'] = $img_alt;
+      $variables['rows'][$id]['body'] = $body;
+      $variables['rows'][$id]['links'] = $links;
+      if ($row_class = $view->style_plugin->getRowClass($id)) {
+        $variables['rows'][$id]['attributes']->addClass($row_class);
+      }
+    }
+  }
+
+  $variables['options'] = $options;
+  $variables['view_name'] = $view_id;
+
+}

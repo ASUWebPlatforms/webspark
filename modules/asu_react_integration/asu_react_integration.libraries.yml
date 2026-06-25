@@ -1,0 +1,4 @@
+reactjs:
+  version: 2.18.12
+  js:
+    dist/react.production.min.js: {minified: true, weight: -10}

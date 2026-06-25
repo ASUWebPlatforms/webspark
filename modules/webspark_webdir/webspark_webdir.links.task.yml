@@ -1,0 +1,15 @@
+entity.asu_profile.canonical:
+  title: 'View'
+  route_name: entity.asu_profile.canonical
+  base_route: entity.asu_profile.canonical
+
+entity.asu_profile.edit_form:
+  title: 'Edit'
+  route_name: entity.asu_profile.edit_form
+  base_route: entity.asu_profile.canonical
+
+entity.asu_profile.delete_form:
+  title: 'Delete'
+  route_name: entity.asu_profile.delete_form
+  base_route: entity.asu_profile.canonical
+  weight: 10
