@@ -3,8 +3,10 @@ status: true
 dependencies:
   config:
     - field.field.node.article.body
+    - field.field.node.article.field_article_tags
     - field.field.node.article.field_author
     - field.field.node.article.field_byline
+    - field.field.node.article.field_cta_link
     - field.field.node.article.field_date_published
     - field.field.node.article.field_header_style
     - field.field.node.article.field_media
@@ -14,6 +16,7 @@ dependencies:
     - datetime
     - layout_builder
     - layout_builder_restrictions
+    - link
     - options
     - text
     - user
@@ -159,6 +162,42 @@ third_party_settings:
                 third_party_settings: {  }
             weight: 7
             additional: {  }
+          318ba129-4fdf-4e72-9465-4382f2633674:
+            uuid: 318ba129-4fdf-4e72-9465-4382f2633674
+            region: first
+            configuration:
+              id: 'field_block:node:article:field_article_tags'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: entity_reference_label
+                label: above
+                settings:
+                  link: true
+                third_party_settings: {  }
+            weight: 8
+            additional: {  }
+          f8ca89dd-1186-4fa6-806d-4d865b0705e8:
+            uuid: f8ca89dd-1186-4fa6-806d-4d865b0705e8
+            region: first
+            configuration:
+              id: 'field_block:node:article:field_cta_link'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: link
+                label: above
+                settings:
+                  trim_length: 80
+                  url_only: false
+                  url_plain: false
+                  rel: ''
+                  target: ''
+                third_party_settings: {  }
+            weight: 9
+            additional: {  }
         third_party_settings: {  }
   layout_builder_restrictions:
     allowed_block_categories: {  }
@@ -195,6 +234,14 @@ content:
     third_party_settings: {  }
     weight: 103
     region: first
+  field_article_tags:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 107
+    region: first
   field_author:
     type: string
     label: above
@@ -209,6 +256,18 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 104
+    region: first
+  field_cta_link:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 108
     region: first
   field_date_published:
     type: datetime_default

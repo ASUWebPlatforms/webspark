@@ -40,6 +40,13 @@ function asu_events_preprocess_block(&$variables) {
     if ($block->field_events_items_to_display->value) {
       $events_block->display = $block->field_events_items_to_display->value;
     }
+    // Editor-configurable "no results" message. When set, it is forwarded to the
+    // events component as noFeedText (asu_events.js) and rendered when the feed
+    // returns no upcoming events. When empty it is omitted, so the component
+    // uses its own default ("No events to show.").
+    if ($block->hasField('field_events_no_results') && !$block->field_events_no_results->isEmpty()) {
+      $events_block->noFeedText = trim((string) $block->field_events_no_results->value);
+    }
     $events_block->dataSource->url = '/asu-events-feed/';
     if ($block->field_feed_taxonomy_term->value) {
       // Allow only alphanumeric characters and underscore.

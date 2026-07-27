@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * ASU Footer React component integration.
+ */
+
+/**
+ * Implements hook_theme().
+ */
 function asu_footer_theme($existing, $type, $theme, $path) {
   return [
     'asu_footer__footer_block' => [
@@ -27,6 +35,7 @@ function asu_footer_theme($existing, $type, $theme, $path) {
         'cta_title' => NULL,
         'cta_url' => NULL,
       ],
+      'path' => $path . '/templates',
     ]
   ];
 }

@@ -123,16 +123,27 @@ class AsuBrandHeaderBlock extends BlockBase {
     }
 
     $block_output = [];
-    // Markup containers where components will initialize.
-    $block_output['#markup'] =
-      $this->t('
-        <!-- Header component will be initialized in this container. -->
-        <div id="ws2HeaderContainer"></div>');
     $tag_menu = $config['asu_brand_header_block_menu_enabled'] ? $config['asu_brand_header_block_menu_name'] : 'main';
-    $block_output['#cache'] = [
-      'contexts' => $this->getCacheContexts(),
-      // Break cache when block or menus change.
-      'tags' => Cache::mergeTags($this->getCacheTags(), Cache::buildTags('config:system.menu', [$tag_menu], '.')),
+
+    // Render static HTML header first (for SEO link visibility), then React
+    // hydrates the same #ws2HeaderContainer on the client side.
+    $block_output = [
+      '#theme' => 'asu_brand__header_block',
+      '#cache' => [
+        'contexts' => $this->getCacheContexts(),
+        'tags' => Cache::mergeTags($this->getCacheTags(), Cache::buildTags('config:system.menu', [$tag_menu], '.')),
+      ],
+      '#header_base_url' => $props['baseUrl'],
+      '#title' => $props['title'],
+      '#parent_org' => $config['asu_brand_header_block_parent_org'] ?? '',
+      '#parent_org_url' => $config['asu_brand_header_block_parent_org_url'] ?? '',
+      '#logo' => $props['logo'],
+      '#nav_tree' => $navTree,
+      '#buttons' => $props['buttons'] ?? [],
+      '#login_link' => $config['asu_brand_header_block_login_path'] ?? '/caslogin',
+      '#logout_link' => $config['asu_brand_header_block_logout_path'] ?? '/caslogout',
+      '#is_partner' => !empty($config['asu_brand_header_block_partner_enabled']),
+      '#partner_logo' => $props['partnerLogo'] ?? [],
     ];
     // Attach components and helper js registered in asu_brand.libraries.yml.
     $block_output['#attached']['library'][] = 'asu_react_core/react-core';

@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@asu/app-degree-pages@3.2.0":
-  version "3.2.0"
-  resolved "https://npm.pkg.github.com/download/@asu/app-degree-pages/3.2.0/e585e83044c6de23be2732f166675303a74a1b38#e585e83044c6de23be2732f166675303a74a1b38"
-  integrity sha512-GpAKSWRv5Xvk0Rns6j367VhsmnIbWcT1+f5sAiaLC5O78V5s1GxYGrr7l7o3Hy0CLQXH9PXkXk3upLJYkrTzDg==
+"@asu/app-degree-pages@3.2.2":
+  version "3.2.2"
+  resolved "https://npm.pkg.github.com/download/@asu/app-degree-pages/3.2.2/d045a3c0648234121d82330d65cc5f4ac8426f40#d045a3c0648234121d82330d65cc5f4ac8426f40"
+  integrity sha512-zWYKwW26IwbkhO28PXAgtGtzZmTcuBmHIzIDKrf5D6qMnGiDpgdIZBTMqSGAL/soBucmMjbh9iSvFC0C7aLNrQ==
   dependencies:
     "@asu/unity-react-core" "^1.0.0"
     "@popperjs/core" "^2.9.2"
@@ -13,16 +13,15 @@
     prop-types "^15.7.2"
     styled-components "^6.0.0"
 
-"@asu/app-rfi@3.9.0":
-  version "3.9.0"
-  resolved "https://npm.pkg.github.com/download/@asu/app-rfi/3.9.0/fab456470ab2acbaa4c4bade54ba22236e22c416#fab456470ab2acbaa4c4bade54ba22236e22c416"
-  integrity sha512-7t80mPSiGby9tMbLaGi4yx0a96LEFhDM25qvVVhOr102Viefqv0dmRQBsfGqNSdEsUAk4jIvYB5rnAgwp9qDXw==
+"@asu/app-rfi@3.10.2":
+  version "3.10.2"
+  resolved "https://npm.pkg.github.com/download/@asu/app-rfi/3.10.2/98d888c0ef0c87d1a4095da032d0f855acf9a941#98d888c0ef0c87d1a4095da032d0f855acf9a941"
+  integrity sha512-zWsTBRW2lW03IjWHh4hAHHOaX+ZbZMfgtQcQXRqCFxLbJnxD97Vy5j7/t1hn+bS4qgO2AGR+wjvEAx6d0DPulg==
   dependencies:
     "@asu/unity-react-core" "^1.0.0"
     formik "^2.1.4"
     prop-types "^15.7.2"
     react-phone-input-2 "2.15.1"
-    reactstrap "^9"
     yup "^0.28.1"
     yup-phone "^1.2.19"
 

@@ -14,6 +14,30 @@ use Drupal\Component\Serialization\Json;
  */
 
 /**
+ * Implements hook_theme().
+ */
+function asu_brand_theme($existing, $type, $theme, $path) {
+  return [
+    'asu_brand__header_block' => [
+      'variables' => [
+        'header_base_url' => NULL,
+        'title' => NULL,
+        'parent_org' => NULL,
+        'parent_org_url' => NULL,
+        'logo' => NULL,
+        'nav_tree' => NULL,
+        'buttons' => NULL,
+        'login_link' => NULL,
+        'logout_link' => NULL,
+        'is_partner' => NULL,
+        'partner_logo' => NULL,
+      ],
+      'path' => $path . '/templates',
+    ],
+  ];
+}
+
+/**
  * Implments hook_entity_base_field_info().
  *
  * Add custom fields to content menu links for use by header.

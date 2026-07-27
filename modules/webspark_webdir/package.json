@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "@asu/app-webdir-ui": "5.0.14"
+    "@asu/app-webdir-ui": "5.0.15"
   },
   "scripts": {
     "postinstall": "node patch.js"

@@ -3,6 +3,13 @@ services:
     class: Drupal\asu_degree_rfi\AsuDegreeRfiDataPotluckClient
     arguments:
       - '@asu_data_potluck.potluck_client'
+  asu_degree_rfi.degree_redirector:
+    class: Drupal\asu_degree_rfi\AsuDegreeRfiDegreeRedirector
+    arguments:
+      - '@entity_type.manager'
+      - '@asu_degree_rfi_data_potluck_client'
+      - '@redirect.repository'
+      - '@logger.factory'
   asu_degree_rfi.helper_functions:
     class: Drupal\asu_degree_rfi\AsuDegreeRfiHelperFunctions
   asu_degree_rfi.route_subscriber:

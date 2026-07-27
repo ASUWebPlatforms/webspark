@@ -2,7 +2,7 @@ name: Webspark
 type: profile
 core_version_requirement: ^9.0 || ^10
 description: 'ASU custom profile.'
-version: 2.18.12
+version: 2.19.0
 distribution:
   name: 'Webspark'
 install:
@@ -69,7 +69,6 @@ install:
   - metatag
   - node
   - options
-  - page_cache
   - paragraphs
   - path
   - pathauto
@@ -106,6 +105,7 @@ install:
   - acquia_purge
   - webspark_frontpage
   - telephone
+  - webspark_views
 themes:
   - renovation
   - claro

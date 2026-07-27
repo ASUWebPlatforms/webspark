@@ -13,6 +13,15 @@
         var cardData = settings.asu.components.content_section[cardId];
 	      var cardId = cardData.cardId;
         var card = settings.asu.components.card[cardId];
+
+        // BigPipe guard: prevent double-initialization.
+        var targetEl = document.getElementById('card-' + card.id);
+        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
+          delete settings.asu.components.content_section[cardId];
+          continue;
+        }
+        targetEl.setAttribute('data-react-root-initialized', 'true');
+
         //Setup and initialize the Card.
         unityReactCore.initCard({
           targetSelector: '#card-' + card.id,

@@ -2,7 +2,7 @@
  * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
-import TableCellPropertyCommand from '@ckeditor/ckeditor5-table/src/tablecellproperties/commands/tablecellpropertycommand';
+import { Command } from 'ckeditor5/src/core';
 import { first } from 'ckeditor5/src/utils';
 
 /**
@@ -12,7 +12,7 @@ import { first } from 'ckeditor5/src/utils';
  * the `'tableCellWsClass'` editor command.
  *
  */
-export default class TableCellWsClassCommand extends TableCellPropertyCommand {
+export default class TableCellWsClassCommand extends Command {
   /**
    * Creates a new `TableCellWsClassCommand` instance.
    *

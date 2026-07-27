@@ -10,6 +10,15 @@
       }
       for (var imageId in settings.asu.components.gallery) {
         var carouselData = settings.asu.components.gallery[imageId];
+
+        // BigPipe guard: prevent double-initialization.
+        var targetEl = document.getElementById("imageGalleryCarouselContainer" + imageId);
+        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
+          delete settings.asu.components.gallery[imageId];
+          continue;
+        }
+        targetEl.setAttribute('data-react-root-initialized', 'true');
+
         var images = [];
         carouselData.items.forEach(function(item) {
           images.push(settings.asu.components.gallery_image[item]);

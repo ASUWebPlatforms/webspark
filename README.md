@@ -1,4 +1,3 @@
-
 # Webspark profile
 
 ## Description
@@ -7,6 +6,7 @@ Webspark profile installs all the required modules and configurations for the
 webspark distribution.
 
 ## How to install
+
 - For an initial install, follow the instructions in the INSTALL-INSTRUCTIONS.md file.
 
 ## Features
@@ -14,7 +14,6 @@ webspark distribution.
 - Installs all the required modules for this distribution
 - Comes with updates that will periodically improve the experience
 - Has some predefined configurations on blocks, users, ckeditor profiles, system settings, etc.
-
 
 ## Requirements
 
@@ -38,10 +37,10 @@ Both folders live inside the profile and are the **source of truth**. They are
 copied out to the repository root, where they are renamed (the `-source` suffix is
 dropped):
 
-| Profile source folder           | Root destination          | How it gets there                                            |
-|---------------------------------| ------------------------- | ------------------------------------------------------------ |
-| `webspark-dependencies-source/` | `webspark-dependencies/`  | Automatically rsynced on every `composer install`/`update`.  |
-| `custom-dependencies-source/`   | `custom-dependencies/`    | Copied **once** by hand during install, then owned by the site. |
+| Profile source folder           | Root destination         | How it gets there                                               |
+| ------------------------------- | ------------------------ | --------------------------------------------------------------- |
+| `webspark-dependencies-source/` | `webspark-dependencies/` | Automatically rsynced on every `composer install`/`update`.     |
+| `custom-dependencies-source/`   | `custom-dependencies/`   | Copied **once** by hand during install, then owned by the site. |
 
 - `webspark-dependencies/` is **upstream-owned**. It is overwritten on every Composer
   run, so do **not** edit anything in it at the individual site level — your changes will be lost. Upstream changes belong in
@@ -57,11 +56,11 @@ dropped):
 The root `composer.json` `scripts` section wires the process into Composer's
 lifecycle:
 
-  - `WebsparkCustomScripts\ComposerScripts::writeComposerPatchFile` — merges
-    `webspark-dependencies/patches.webspark.json` (upstream) and
-    `custom-dependencies/patches.custom.json` (site) into the root
-    `composer.patches.json`. That root file is generated; edit the source patch
-    files instead.
+- `WebsparkCustomScripts\ComposerScripts::writeComposerPatchFile` — merges
+  `webspark-dependencies/patches.webspark.json` (upstream) and
+  `custom-dependencies/patches.custom.json` (site) into the root
+  `composer.patches.json`. That root file is generated; edit the source patch
+  files instead.
 - **`post-update-cmd`** runs after `composer update` and **`post-install-cmd`** runs
   after `composer install`. Both start by running the
   `docroot/profiles/contrib/webspark/sync-dependencies` script (the actual file sync,
@@ -98,14 +97,14 @@ When it runs locally it performs the following steps:
    live for the repository to work, and the source copy under
    `webspark-dependencies/scripts/` is deleted after each move:
 
-   | Synced source file                         | Final destination                          | Behavior                                                                                       |
-   | ------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-   | `scripts/pre-commit`                       | `.git/hooks/pre-commit`                    | Installs the hook, or merges the `asu_commit_check` function into an existing hook.            |
-   | `scripts/post-commit`                      | `.git/hooks/post-commit`                   | Installs the hook, or merges the `asu_post_commit_actions` function into an existing hook.     |
-   | `scripts/.prettierignore`                  | root `.prettierignore`                     | Copied to the repository root.                                                                 |
-   | `scripts/prettierrc.js`                    | root `.prettierrc.js`                      | Copied to the repository root.                                                                 |
-   | `scripts/.root-gitignore`                  | root `.gitignore`                          | Ensures the `/node_modules` and `!/package.json` rules exist (appends them if missing).        |
-   | `scripts/package.json`                     | root `package.json`                        | Creates the root `package.json`, or merges the `prettier` devDependency into an existing one.  |
+   | Synced source file        | Final destination        | Behavior                                                                                      |
+   | ------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- |
+   | `scripts/pre-commit`      | `.git/hooks/pre-commit`  | Installs the hook, or merges the `asu_commit_check` function into an existing hook.           |
+   | `scripts/post-commit`     | `.git/hooks/post-commit` | Installs the hook, or merges the `asu_post_commit_actions` function into an existing hook.    |
+   | `scripts/.prettierignore` | root `.prettierignore`   | Copied to the repository root.                                                                |
+   | `scripts/prettierrc.js`   | root `.prettierrc.js`    | Copied to the repository root.                                                                |
+   | `scripts/.root-gitignore` | root `.gitignore`        | Ensures the `/node_modules` and `!/package.json` rules exist (appends them if missing).       |
+   | `scripts/package.json`    | root `package.json`      | Creates the root `package.json`, or merges the `prettier` devDependency into an existing one. |
 
 4. **Align `drupal/core-dev`.** `sync_core_dev` reads the installed
    `drupal/core-recommended` version from `composer.lock` and adds/updates a matching
