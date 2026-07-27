@@ -6,7 +6,7 @@
  * @module table/tablecellwsproperties/tablecellwspropertiesediting
  */
 import { Plugin } from 'ckeditor5/src/core';
-import { TableEditing } from '@ckeditor/ckeditor5-table/src/tableediting';
+import TableEditing from '@ckeditor/ckeditor5-table/src/tableediting';
 import TableCellWsClassCommand from './tablecellwsclasscommand';
 
 function markerConversion(conversion) {

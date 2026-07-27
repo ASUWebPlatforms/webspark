@@ -32,7 +32,6 @@ function asu_brand_theme($existing, $type, $theme, $path) {
         'is_partner' => NULL,
         'partner_logo' => NULL,
       ],
-      'path' => $path . '/templates',
     ],
   ];
 }

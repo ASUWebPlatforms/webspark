@@ -11,20 +11,10 @@
 
       for (var cardId in settings.asu.components.card_carousel) {
         var carouselData = settings.asu.components.card_carousel[cardId];
-        var targetEl = document.getElementById(carouselData.targetSelector);
-
-        // Guard against double createRoot calls (BigPipe re-fires attachBehaviors).
-        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
-          delete settings.asu.components.card_carousel[cardId];
-          continue;
-        }
-
         var cards = [];
         carouselData.items.forEach(function(item) {
           cards.push(settings.asu.components.card[item]);
         });
-
-        targetEl.setAttribute('data-react-root-initialized', 'true');
 
         // Setup and initialize the Card carousel.
         unityReactCore.initCardCarousel({

@@ -10,7 +10,6 @@ dependencies:
     - field.field.block_content.events.field_events_header_text_color
     - field.field.block_content.events.field_events_heading
     - field.field.block_content.events.field_events_items_to_display
-    - field.field.block_content.events.field_events_no_results
     - field.field.block_content.events.field_feed_taxonomy_term
     - field.field.block_content.events.field_spacing_bottom
     - field.field.block_content.events.field_spacing_top
@@ -95,14 +94,6 @@ content:
     weight: 3
     region: content
     settings: {  }
-    third_party_settings: {  }
-  field_events_no_results:
-    type: string_textarea
-    weight: 10
-    region: content
-    settings:
-      rows: 3
-      placeholder: ''
     third_party_settings: {  }
   field_feed_taxonomy_term:
     type: string_textfield

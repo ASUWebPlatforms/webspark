@@ -14,14 +14,6 @@
 				var testimonialId = testimonialData.items[0];
 				var testimonial = settings.asu.components.testimonial[testimonialId];
 
-        // BigPipe guard: prevent double-initialization.
-        var targetEl = document.getElementById('testimonial-' + testimonialId);
-        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
-          delete settings.asu.components.testimonialblock[testimonialId];
-          continue;
-        }
-        targetEl.setAttribute('data-react-root-initialized', 'true');
-
         // Setup and initialize testimonial options.
         unityReactCore.initTestimonial({
           targetSelector: '#testimonial-' + testimonialId,

@@ -32,7 +32,6 @@ These changes allow for better organization and separation of concerns within th
 3. Add, update, or remove patches in the `custom-dependencies/patches.custom.json` file as needed.
 
 Example of what the patches.custom.json file contents would look like with a single patch:
-
 ```
 {
   "drupal/image_widget_crop": {

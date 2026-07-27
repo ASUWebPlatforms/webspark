@@ -11,15 +11,6 @@
 
       for (var newsId in settings.asu.components.asu_news) {
         var newsData = settings.asu.components.asu_news[newsId];
-
-        // BigPipe guard: prevent double-initialization.
-        var targetEl = document.getElementById("news-wrapper-" + newsId);
-        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
-          delete settings.asu.components.asu_news[newsId];
-          continue;
-        }
-        targetEl.setAttribute('data-react-root-initialized', 'true');
-
         switch(newsData.display) {
           case 'Horizontal':
             AsuNews.initCardListNewsComponent({

@@ -5,11 +5,8 @@ namespace SampleWebsparkCustomScripts;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Script\Event;
 
-/**
- *
- */
-class CustomComposerScripts {
-
+class CustomComposerScripts
+{
   /**
    * Add a dependency to the custom-dependencies composer.json file.
    *
@@ -27,41 +24,41 @@ class CustomComposerScripts {
    *
    *    composer update
    *
-   * @param \Composer\Script\Event $event
-   *
+   * @param Event $event
    * @return int
    */
-  public static function customRequire(Event $event): int {
+  public static function customRequire(Event $event): int
+  {
     $io = $event->getIO();
     $arguments = $event->getArguments();
 
-    $hasNoUpdate = array_search('--no-update', $arguments) !== FALSE;
+    $hasNoUpdate = array_search('--no-update', $arguments) !== false;
 
-    // Remove --working-dir, --no-update and --no-install, if provided.
+    // Remove --working-dir, --no-update and --no-install, if provided
     $arguments = array_filter($arguments, function ($item) {
-      return (substr($item, 0, 13) != '--working-dir') &&
+      return
+        (substr($item, 0, 13) != '--working-dir') &&
         ($item != '--no-update') &&
         ($item != '--no-install');
     });
 
-    // Escape the arguments passed in.
+    // Escape the arguments passed in
     $args = array_map(function ($item) {
       return escapeshellarg($item);
     }, $arguments);
 
     // Run `require` with '--no-update' if there is no composer.lock file,
-    // and without it if there is.
+    // and without it if there is
     $addNoUpdate = $hasNoUpdate || !file_exists('custom-dependencies/composer.lock');
 
     if ($addNoUpdate) {
       $args[] = '--no-update';
-    }
-    else {
+    } else {
       $args[] = '--no-install';
     }
 
     // Insert the new projects into the custom-dependencies composer.json
-    // without writing vendor & etc. to the custom-dependencies directory.
+    // without writing vendor & etc. to the custom-dependencies directory
     $cmd = "composer --working-dir=custom-dependencies require " . implode(' ', $args);
     $io->writeError($cmd . PHP_EOL);
     passthru($cmd, $statusCode);
@@ -86,25 +83,25 @@ class CustomComposerScripts {
    *
    *    composer update
    *
-   * @param \Composer\Script\Event $event
-   *
+   * @param Event $event
    * @return int
    */
-  public static function customRemove(Event $event): int {
+  public static function customRemove(Event $event): int
+  {
     $io = $event->getIO();
     $arguments = $event->getArguments();
 
-    // Remove --working-dir, if provided.
+    // Remove --working-dir, if provided
     $arguments = array_filter($arguments, function ($item) {
       return substr($item, 0, 13) != '--working-dir';
     });
 
-    // Escape the arguments passed in.
+    // Escape the arguments passed in
     $args = array_map(function ($item) {
       return escapeshellarg($item);
     }, $arguments);
 
-    // Remove the projects from the custom-dependencies composer.json.
+    // Remove the projects from the custom-dependencies composer.json
     $cmd = "composer --working-dir=custom-dependencies --no-update remove " . implode(' ', $args);
     $io->writeError($cmd . PHP_EOL);
     passthru($cmd, $statusCode);
@@ -119,7 +116,7 @@ class CustomComposerScripts {
       }
     }
 
-    // Delete composer.lock and vendor directory from custom-dependencies if they exist.
+    // Delete composer.lock and vendor directory from custom-dependencies if they exist
     if (file_exists('custom-dependencies/composer.lock')) {
       unlink('custom-dependencies/composer.lock');
     }
@@ -137,11 +134,11 @@ class CustomComposerScripts {
    * Helper function to remove the composer.lock and vendor directory from /custom-dependencies.
    *
    * @param $dirPath
-   *
    * @return void
    */
-  public static function deleteDirectory($dirPath): void {
-    if (!is_dir($dirPath)) {
+  public static function deleteDirectory($dirPath): void
+  {
+    if (! is_dir($dirPath)) {
       throw new \InvalidArgumentException("$dirPath must be a directory");
     }
 
@@ -154,8 +151,7 @@ class CustomComposerScripts {
     foreach ($files as $file) {
       if (is_dir($file)) {
         self::deleteDirectory($file);
-      }
-      else {
+      } else {
         unlink($file);
       }
     }
@@ -166,11 +162,11 @@ class CustomComposerScripts {
   /**
    * Check what command the user is running, and provide the proper messaging.
    *
-   * @param \Composer\Plugin\PreCommandRunEvent $event
-   *
+   * @param PreCommandRunEvent $event
    * @return void
    */
-  public static function checkCommand(PreCommandRunEvent $event): void {
+  public static function checkCommand(PreCommandRunEvent $event): void
+  {
     if ($event->getCommand() == 'require' || $event->getCommand() == 'remove') {
       echo "\n";
       echo " _   _ _____    _    ____  ____    _   _ ____  _ \n";
@@ -201,5 +197,4 @@ class CustomComposerScripts {
       echo "\n";
     }
   }
-
 }

@@ -1,7 +1,6 @@
 **/vendor/**/*
 **/node_modules/**/*
 **/build/**/*
-**/dist/**/*
 **/js_test_files/**/*
 **/css_test_files/**/*.css
 composer.patches.json

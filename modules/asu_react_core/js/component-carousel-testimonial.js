@@ -12,14 +12,6 @@
       for (var testimonialId in settings.asu.components.testimonial_carousel) {
         var carouselData = settings.asu.components.testimonial_carousel[testimonialId];
 
-        // BigPipe guard: prevent double-initialization.
-        var targetEl = document.getElementById("testimonialCarouselContainer" + testimonialId);
-        if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
-          delete settings.asu.components.testimonial_carousel[testimonialId];
-          continue;
-        }
-        targetEl.setAttribute('data-react-root-initialized', 'true');
-
         var testimonials = [];
         carouselData.items.forEach(function(item) {
           testimonials.push(settings.asu.components.testimonial[item]);

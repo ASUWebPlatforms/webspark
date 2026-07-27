@@ -9,5 +9,4 @@ dependencies:
   - drupal:field_group
   - webspark_utility:webspark_utility
   - drupal:pathauto
-  - drupal:redirect
   - asu_data_potluck:asu_data_potluck

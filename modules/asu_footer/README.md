@@ -38,7 +38,6 @@ The ASU Footer module creates a React-based footer component that follows ASU We
 ## Configuration
 
 ### Block Configuration
-
 1. Go to Admin → Structure → Block Layout
 2. Place the "ASU footer" block in your desired region
 3. Configure the block settings:
@@ -46,13 +45,11 @@ The ASU Footer module creates a React-based footer component that follows ASU We
    - **Contact Information Settings**: Enable and configure contact information
 
 ### Global Settings
-
 Access global footer settings at: Admin → Configuration → ASU → ASU Footer
 
 ## Usage
 
 Once configured, the footer will automatically render using the React component. The footer includes:
-
 - Social media icons (if configured)
 - Contact information (if configured)
 - Standard ASU legal and innovation sections
@@ -66,7 +63,6 @@ Once configured, the footer will automatically render using the React component.
 ## Technical Details
 
 The module follows the same pattern as the ASU Brand header module:
-
 - Block plugin for configuration (`AsuFooterBlock.php`)
 - JavaScript integration (`asu_footer.footer.js`)
 - Drupal settings integration for passing configuration to React
@@ -75,9 +71,10 @@ The module follows the same pattern as the ASU Brand header module:
 ## Troubleshooting
 
 If the footer doesn't display properly:
-
 1. Check that the `@asu/component-header-footer` package is installed
 2. Verify JavaScript console for any errors
 3. Ensure the block is placed and configured correctly
 4. Check that required dependencies are enabled" block.
-   In order to add custom menus, you can do that in the Menu section: admin/structure/menu.
+In order to add custom menus, you can do that in the Menu section: admin/structure/menu.
+
+

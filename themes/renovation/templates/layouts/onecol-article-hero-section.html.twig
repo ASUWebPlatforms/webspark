@@ -11,13 +11,7 @@
           <div class="content">
             {% for key, item in content.first %}
               {% if not loop.first %}
-                {% if item['#plugin_id'] == 'field_block:node:article:field_article_tags' %}
-                  <div class="article-tags">{{ item.content }}</div>
-                {% elseif item['#plugin_id'] == 'field_block:node:article:field_cta_link' %}
-                  <div class="article-ctas">{{ item.content }}</div>
-                {% else %}
-                  {{ item.content }}
-                {% endif %}
+                {{ item.content }}
               {% endif %}
             {% endfor %}
           </div>

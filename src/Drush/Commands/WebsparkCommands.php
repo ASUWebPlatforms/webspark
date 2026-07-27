@@ -22,14 +22,14 @@ final class WebsparkCommands extends DrushCommands {
     // Check if destination directory exists, if not create it.
     if (!is_dir($destination)) {
       $this->logger()->notice(dt('Destination directory does not exist. Creating now.'));
-      if (!mkdir($destination, 0755, TRUE) && !is_dir($destination)) {
+      if (!mkdir($destination, 0755, true) && !is_dir($destination)) {
         throw new \RuntimeException(sprintf('Directory "%s" was not created', $destination));
       }
     }
 
-    // Use rsync to sync the two directories.
+    // use rsync to sync the two directories.
     exec(sprintf('rsync -av --delete %s %s', escapeshellarg($source), escapeshellarg($destination)));
-    // Use sed to replace incorrect namespaces.
+    // use sed to replace incorrect namespaces.
     exec(sprintf('find %s -type f -name "*.php" -exec sed -i "s/namespace SampleWebsparkCustomScripts;/namespace WebsparkCustomScripts;/g" {} \;', escapeshellarg($destination)));
     $this->logger()->success(dt('Webspark dependencies directory synced successfully.'));
   }
@@ -49,7 +49,7 @@ final class WebsparkCommands extends DrushCommands {
       return;
     }
 
-    // Use rsync to sync the two directories.
+    // use rsync to sync the two directories.
     exec(sprintf('rsync -av --delete %s %s', escapeshellarg($source), escapeshellarg($destination)));
     $this->logger()->success(dt('Custom dependencies directory created successfully.'));
   }

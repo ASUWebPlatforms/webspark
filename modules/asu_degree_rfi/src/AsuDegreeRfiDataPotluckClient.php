@@ -63,7 +63,7 @@ class AsuDegreeRfiDataPotluckClient {
    * @return array
    *   Response data.
    */
-  public function degreeQuery(array $params, ?string $codeSet = NULL) {
+  public function degreeQuery(array $params, string $codeSet = NULL) {
     return $this->potluckClient->getData('codeset/' . $codeSet, [
       // Array of params including method and fields.
       'query' => Query::build($params),
@@ -216,7 +216,7 @@ class AsuDegreeRfiDataPotluckClient {
         'degreeType' => $program,
         'method' => 'findAllDegrees',
         'filter' => 'activeInDegreeSearch',
-        'include' => ['rfiDisplay', 'acadPlanMarketingDescription']
+        'include' => ['rfiDisplay','acadPlanMarketingDescription']
       ],
       "acad-plans"
     );
@@ -279,33 +279,6 @@ class AsuDegreeRfiDataPotluckClient {
     $response = $this->degreeLookup($acad_plan_code);
 
     return is_array($response) ? $response : FALSE;
-  }
-
-  /**
-   * Get a degree's degreeType categorization by Academic Plan code.
-   *
-   * The degreeType field is calculated/derived by Data Potluck and is only
-   * returned when explicitly requested via the include parameter.
-   *
-   * @param string $acad_plan_code
-   *   Academic Plan code.
-   *
-   * @return string|null
-   *   The degreeType code (one of 'UG', 'UGCM', 'GR', 'OTHR'), or NULL when it
-   *   could not be resolved (e.g. unknown plan code or a failed API call).
-   *
-   * @see https://asudev.jira.com/wiki/spaces/DPL/pages/2796192305/Academic+Plan+codeset
-   */
-  public function getDegreeTypeByAcadPlan(string $acad_plan_code) {
-    $response = $this->potluckClient->getData('codeset/acad-plan/' . $acad_plan_code, [
-      'query' => Query::build(['include' => 'degreeType']),
-    ]);
-
-    if (is_array($response) && !empty($response['degreeType'])) {
-      return $response['degreeType'];
-    }
-
-    return NULL;
   }
 
 }
