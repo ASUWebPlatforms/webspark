@@ -4,8 +4,10 @@ dependencies:
   config:
     - core.entity_view_mode.node.rss
     - field.field.node.article.body
+    - field.field.node.article.field_article_tags
     - field.field.node.article.field_author
     - field.field.node.article.field_byline
+    - field.field.node.article.field_cta_link
     - field.field.node.article.field_date_published
     - field.field.node.article.field_header_style
     - field.field.node.article.field_media
@@ -23,8 +25,10 @@ content:
     region: content
 hidden:
   body: true
+  field_article_tags: true
   field_author: true
   field_byline: true
+  field_cta_link: true
   field_date_published: true
   field_header_style: true
   field_media: true

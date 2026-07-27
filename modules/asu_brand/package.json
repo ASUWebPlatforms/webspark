@@ -6,7 +6,7 @@
   "author": "Michael Samuelson",
   "license": "MIT",
   "dependencies": {
-    "@asu/component-header-footer": "1.4.3"
+    "@asu/component-header-footer": "1.4.5"
   },
   "scripts": {
     "postinstall": "node patch.js"

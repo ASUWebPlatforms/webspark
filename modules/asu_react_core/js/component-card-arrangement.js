@@ -27,6 +27,14 @@
         const isRankingCardsOnly = arrangementData.cards.every(card => card.cardType === "ranking");
 
         if (isValidForCardArrangement && isRankingCardsOnly) {
+          // BigPipe guard: prevent double-initialization.
+          var targetEl = document.getElementById("card-arrangement-" + blockUuid);
+          if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
+            delete settings.asu.components.card_arrangement[blockUuid];
+            continue;
+          }
+          targetEl.setAttribute('data-react-root-initialized', 'true');
+
           // Use ranking card component for multiple ranking cards
           unityReactCore.initCardArrangement({
             targetSelector: "#card-arrangement-" + blockUuid,
@@ -45,6 +53,14 @@
             },
           });
         } else if (isValidForCardArrangement) {
+          // BigPipe guard: prevent double-initialization.
+          var targetEl = document.getElementById("card-arrangement-" + blockUuid);
+          if (!targetEl || targetEl.hasAttribute('data-react-root-initialized')) {
+            delete settings.asu.components.card_arrangement[blockUuid];
+            continue;
+          }
+          targetEl.setAttribute('data-react-root-initialized', 'true');
+
           // Use card arrangement component for multiple cards
           unityReactCore.initCardArrangement({
             targetSelector: "#card-arrangement-" + blockUuid,
@@ -90,6 +106,13 @@
         else {
           // Fallback: render individual cards (existing behavior)
           arrangementData.cards.forEach(function(card) {
+            // BigPipe guard: prevent double-initialization.
+            var cardEl = document.getElementById("card-" + card.id);
+            if (!cardEl || cardEl.hasAttribute('data-react-root-initialized')) {
+              return;
+            }
+            cardEl.setAttribute('data-react-root-initialized', 'true');
+
             if (card.cardType === "ranking") {
               unityReactCore.initRankingCard({
                 targetSelector: "#card-" + card.id,

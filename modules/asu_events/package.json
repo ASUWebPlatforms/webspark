@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@asu/component-events": "3.1.0"
+    "@asu/component-events": "3.2.0"
   },
   "scripts": {
     "postinstall": "node patch.js"

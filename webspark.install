@@ -13,6 +13,10 @@ use Drush\Drush;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Drupal\purge\Plugin\Purge\Invalidation\PurgePurgers;
+use Drupal\Core\Serialization\Yaml;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\layout_builder\SectionComponent;
 
 /**
  * Implements hook_install().
@@ -901,5 +905,161 @@ function webspark_update_10023(&$sandbox): void {
     }
   }
 
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WHMN-540: Non-destructively add CTA link and Tags fields to articles.
+ *
+ * Adds the field_cta_link and field_article_tags fields to the article
+ * content type and merges them into the article displays without overwriting
+ * any customizations sites may have made. New config is only created when it
+ * is absent, displays are merged component by component (never reverted), and
+ * Layout Builder blocks are appended only when the default section exists and
+ * the block is not already present. The hook is safe to re-run.
+ */
+function webspark_update_10024(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+
+  $logger = \Drupal::logger('webspark');
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  // Bail early if the article content type is not present.
+  if (!$entity_type_manager->getStorage('node_type')->load('article')) {
+    $logger->notice('webspark_update_10024: node.type.article not found; skipping article field rollout.');
+    \Drupal::state()->set('configuration_locked', TRUE);
+    return;
+  }
+
+  // Read the shipped install config so this hook stays in sync with the
+  // profile's config/install source of truth.
+  $profile_path = \Drupal::service('extension.list.profile')->getPath('webspark');
+  $read_install = static function (string $name) use ($profile_path): array {
+    $file = $profile_path . '/config/install/' . $name . '.yml';
+    return is_file($file) ? (Yaml::decode(file_get_contents($file)) ?: []) : [];
+  };
+
+  $config_manager = \Drupal::service('webspark.config_manager');
+
+  // Determine which fields can be rolled out. field_article_tags requires the
+  // tags vocabulary; skip it if that vocabulary is missing.
+  $fields = [
+    'field_cta_link' => TRUE,
+    'field_article_tags' => (bool) $entity_type_manager->getStorage('taxonomy_vocabulary')->load('tags'),
+  ];
+  if (!$fields['field_article_tags']) {
+    $logger->notice('webspark_update_10024: taxonomy.vocabulary.tags not found; skipping field_article_tags.');
+  }
+
+  // 1. Create field storages and instances only when they do not already
+  //    exist, so existing field data is never touched.
+  foreach ($fields as $field_name => $available) {
+    if (!$available) {
+      continue;
+    }
+    if (!FieldStorageConfig::loadByName('node', $field_name)) {
+      $config_manager->importConfigFile('field.storage.node.' . $field_name);
+    }
+    if (!FieldConfig::loadByName('node', 'article', $field_name)) {
+      $config_manager->importConfigFile('field.field.node.article.' . $field_name);
+    }
+  }
+
+  $active_fields = array_keys(array_filter($fields));
+  $display_repository = \Drupal::service('entity_display.repository');
+
+  // 2. Form display: merge the widgets in, preserving any site customizations.
+  $form_source = $read_install('core.entity_form_display.node.article.default');
+  $form_display = $display_repository->getFormDisplay('node', 'article', 'default');
+  foreach ($active_fields as $field_name) {
+    if (!$form_display->getComponent($field_name) && isset($form_source['content'][$field_name])) {
+      $form_display->setComponent($field_name, $form_source['content'][$field_name]);
+    }
+  }
+  $form_display->save();
+
+  // 3. Default view display: merge the formatters, then append the Layout
+  //    Builder field blocks non-destructively.
+  $view_source = $read_install('core.entity_view_display.node.article.default');
+  $view_display = $display_repository->getViewDisplay('node', 'article', 'default');
+  $hidden = $view_display->get('hidden') ?: [];
+  foreach ($active_fields as $field_name) {
+    if (!$view_display->getComponent($field_name)
+      && !array_key_exists($field_name, $hidden)
+      && isset($view_source['content'][$field_name])) {
+      $view_display->setComponent($field_name, $view_source['content'][$field_name]);
+    }
+  }
+
+  // Append the Layout Builder field blocks only when Layout Builder is enabled,
+  // the default section exists, and the block is not already present. Per-node
+  // layout overrides are never touched.
+  if ($view_display->getThirdPartySetting('layout_builder', 'enabled') && method_exists($view_display, 'getSections')) {
+    $target_blocks = [];
+    foreach ($view_source['third_party_settings']['layout_builder']['sections'] ?? [] as $section_data) {
+      foreach ($section_data['components'] ?? [] as $component) {
+        $plugin_id = $component['configuration']['id'] ?? '';
+        foreach ($active_fields as $field_name) {
+          if ($plugin_id === 'field_block:node:article:' . $field_name) {
+            $target_blocks[$plugin_id] = [
+              'region' => $component['region'] ?? 'first',
+              'configuration' => $component['configuration'],
+            ];
+          }
+        }
+      }
+    }
+
+    $sections = $view_display->getSections();
+    if ($sections && $target_blocks) {
+      $section = $view_display->getSection(0);
+      $existing = [];
+      foreach ($section->getComponents() as $existing_component) {
+        $existing[$existing_component->getPluginId()] = TRUE;
+      }
+      foreach ($target_blocks as $plugin_id => $info) {
+        if (!isset($existing[$plugin_id])) {
+          $uuid = \Drupal::service('uuid')->generate();
+          $section->appendComponent(new SectionComponent($uuid, $info['region'], $info['configuration']));
+        }
+      }
+    }
+  }
+  $view_display->save();
+
+  // 4. RSS and teaser view displays: ensure the fields are hidden.
+  foreach (['rss', 'teaser'] as $view_mode) {
+    $display = $display_repository->getViewDisplay('node', 'article', $view_mode);
+    $changed = FALSE;
+    foreach ($active_fields as $field_name) {
+      if ($display->getComponent($field_name)) {
+        $display->removeComponent($field_name);
+        $changed = TRUE;
+      }
+    }
+    if ($changed) {
+      $display->save();
+    }
+  }
+
+  $logger->notice('webspark_update_10024: Rolled out article fields (@fields).', [
+    '@fields' => implode(', ', $active_fields),
+  ]);
+
+  \Drupal::state()->set('configuration_locked', TRUE);
+}
+
+/**
+ * WS2-10025: Enable display summary for body fields on article and basic page.
+ */
+function webspark_update_10025(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+  $config_factory = \Drupal::service('config.factory');
+  $config_factory->getEditable('field.field.node.article.body')
+    ->set('settings.display_summary', TRUE)
+    ->save();
+  $config_factory->getEditable('field.field.node.page.body')
+    ->set('settings.display_summary', TRUE)
+    ->save();
   \Drupal::state()->set('configuration_locked', TRUE);
 }

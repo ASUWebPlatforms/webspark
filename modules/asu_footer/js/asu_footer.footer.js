@@ -1,25 +1,34 @@
 (function (Drupal, drupalSettings) {
   Drupal.behaviors.AsuFooterBehavior = {
     attach: function (context, settings) {
-
       // If the asu footer is on the page
-      var footerElement = document.getElementById("ws2FooterContainer");
+      var footerElement = document.getElementById('ws2FooterContainer');
       if (footerElement) {
+        // BigPipe guard: prevent double-initialization.
+        if (footerElement.hasAttribute('data-react-root-initialized')) {
+          return;
+        }
+        footerElement.setAttribute('data-react-root-initialized', 'true');
 
-        var props = drupalSettings.asu_footer ? drupalSettings.asu_footer.props : {};
+        var props = drupalSettings.asu_footer
+          ? drupalSettings.asu_footer.props
+          : {};
 
         // Check if AsuHeaderFooter is available and initialize the footer
-        if (typeof AsuHeaderFooter !== 'undefined' && typeof AsuHeaderFooter.initASUFooter === 'function') {
+        if (
+          typeof AsuHeaderFooter !== 'undefined' &&
+          typeof AsuHeaderFooter.initASUFooter === 'function'
+        ) {
           AsuHeaderFooter.initASUFooter({
             targetSelector: '#ws2FooterContainer',
-            props: props
+            props: props,
           });
         } else {
-          console.warn('AsuHeaderFooter.initASUFooter not found. Make sure @asu/component-header-footer package is properly loaded.');
+          console.warn(
+            'AsuHeaderFooter.initASUFooter not found. Make sure @asu/component-header-footer package is properly loaded.',
+          );
         }
-
       }
-    }
+    },
   };
-
 })(Drupal, drupalSettings);

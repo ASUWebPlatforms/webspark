@@ -33,6 +33,15 @@ function asu_events_update_9003(&$sandbox) {
   _asu_events_revert_all_module_config();
 }
 
+/**
+ * Implements hook_update_N();
+ * Import the configurable "No results message" field (field_events_no_results)
+ * on the Events block and its form display widget.
+ */
+function asu_events_update_10002(&$sandbox) {
+  _asu_events_revert_all_module_config();
+}
+
 function _asu_events_revert_all_module_config() {
 
   $module = \Drupal::service('module_handler')
