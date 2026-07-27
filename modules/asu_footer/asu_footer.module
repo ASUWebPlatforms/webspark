@@ -35,6 +35,7 @@ function asu_footer_theme($existing, $type, $theme, $path) {
         'cta_title' => NULL,
         'cta_url' => NULL,
       ],
+      'path' => $path . '/templates',
     ]
   ];
 }

@@ -1,5 +1,5 @@
 events-component:
-  version: 2.18.13
+  version: 2.18.15
   dependencies:
     - asu_react_integration/reactjs
     - core/jquery
