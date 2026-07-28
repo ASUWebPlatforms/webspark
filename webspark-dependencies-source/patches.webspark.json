@@ -31,7 +31,7 @@
     "3577968: Columns of older versions disappear from ckeditor5": "https://www.drupal.org/files/issues/2026-03-09/3577968.patch"
   },
   "drupal/paragraphs": {
-    "3090200: Paragraphs do not render: access check for view fail when using layout builder": "https://www.drupal.org/files/issues/2026-06-24/3084934-13_combine_3090200-22-rebase.patch"
+    "3090200: Paragraphs do not render: access check for view fail when using layout builder": "https://www.drupal.org/files/issues/2026-07-06/paragraphs-parent-access-block-content-skip-3090200-97.patch"
   },
   "drupal/field_group": {
     "3491233: Ajax error": "https://www.drupal.org/files/issues/2025-01-16/field_group-drupal-10.4-rc1-error-with-field_ui.js--3491233--14.patch"
