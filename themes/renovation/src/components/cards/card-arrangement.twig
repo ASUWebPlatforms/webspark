@@ -1,7 +1,7 @@
 <div class="uds-card-arrangement {{ class_layout }}">
-  <div class="uds-card-arrangement-content-container {{ text_color }}">
+  <div class="uds-card-arrangement-content-container {{ text_color starts with 'highlight-' ? '' : text_color }}">
     {% if heading['#title'] is not empty %}
-      <{{ heading_tag }} class={{ heading_tag == 'h3' ? 'h2' : '' }}>{{ heading }}</{{ heading_tag }}>
+      <{{ heading_tag }} class={{ heading_tag == 'h3' ? 'h2' : '' }}>{% if text_color starts with 'highlight-' %}<span class="{{ text_color }}">{{ heading }}</span>{% else %}{{ heading }}{% endif %}</{{ heading_tag }}>
     {% endif %}
     {{ text }}
     {{ cta }}

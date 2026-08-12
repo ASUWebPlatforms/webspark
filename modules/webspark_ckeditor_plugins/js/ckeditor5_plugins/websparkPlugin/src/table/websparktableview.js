@@ -1,4 +1,4 @@
-import { IconCheck, IconCancel } from "ckeditor5/src/icons";
+import { IconCheck, IconCancel } from 'ckeditor5/src/icons';
 import {
   FocusCycler,
   Model,
@@ -6,12 +6,12 @@ import {
   View,
   ViewCollection,
   submitHandler,
-} from "ckeditor5/src/ui";
+} from 'ckeditor5/src/ui';
 import {
   Collection,
   FocusTracker,
   KeystrokeHandler,
-} from "ckeditor5/src/utils";
+} from 'ckeditor5/src/utils';
 
 import {
   createButton,
@@ -19,13 +19,13 @@ import {
   createInput,
   createRow,
   createSelect,
-} from "../utils/utils";
+} from '../utils/utils';
 
 export class WebsparkTableFormView extends View {
-  DEFAULT_ROWS = "3";
-  DEFAULT_COLS = "2";
-  DEFAULT_HEADER = "none";
-  DEFAULT_TYPE = "default";
+  DEFAULT_ROWS = '3';
+  DEFAULT_COLS = '2';
+  DEFAULT_HEADER = 'none';
+  DEFAULT_TYPE = 'default';
 
   constructor(validators, locale) {
     super(locale);
@@ -35,36 +35,36 @@ export class WebsparkTableFormView extends View {
     this.focusTracker = new FocusTracker();
     this.keystrokes = new KeystrokeHandler();
 
-    this.textInputRowsView = createInput(t("Rows"), locale);
-    this.textInputColsView = createInput(t("Columns"), locale);
+    this.textInputRowsView = createInput(t('Rows'), locale);
+    this.textInputColsView = createInput(t('Columns'), locale);
     this.headersSelect = createSelect(
-      t("Headers"),
+      t('Headers'),
       this._getHeaderOptions(t),
-      locale
+      locale,
     );
     this.tabletypeSelect = createSelect(
-      t("Table Type"),
+      t('Table Type'),
       this._getTableTypeOptions(t),
-      locale
+      locale,
     );
-    this.textCaption = createInput(t("Caption"), locale);
+    this.textCaption = createInput(t('Caption'), locale);
 
     this.saveButtonView = createButton(
-      t("Save"),
+      t('Save'),
       IconCheck,
-      "ck-button-save",
-      locale
+      'ck-button-save',
+      locale,
     );
-    this.saveButtonView.type = "submit";
+    this.saveButtonView.type = 'submit';
 
     this.cancelButtonView = createButton(
-      t("Cancel"),
+      t('Cancel'),
       IconCancel,
-      "ck-button-cancel",
-      locale
+      'ck-button-cancel',
+      locale,
     );
 
-    this.cancelButtonView.delegate("execute").to(this, "cancel");
+    this.cancelButtonView.delegate('execute').to(this, 'cancel');
 
     this._focusables = new ViewCollection();
 
@@ -73,18 +73,18 @@ export class WebsparkTableFormView extends View {
       focusTracker: this.focusTracker,
       keystrokeHandler: this.keystrokes,
       actions: {
-        focusPrevious: "shift + tab",
-        focusNext: "tab",
+        focusPrevious: 'shift + tab',
+        focusNext: 'tab',
       },
     });
 
     this._validators = validators;
 
     this.setTemplate({
-      tag: "form",
+      tag: 'form',
       attributes: {
-        class: ["ck", "ck-webspark-form"],
-        tabindex: "-1",
+        class: ['ck', 'ck-webspark-form'],
+        tabindex: '-1',
       },
       children: [
         createRow(this.textInputRowsView),
@@ -94,7 +94,7 @@ export class WebsparkTableFormView extends View {
         createRow(this.textCaption),
         createContainer(
           [this.saveButtonView, this.cancelButtonView],
-          ["ck-webspark-form-buttons"]
+          ['ck-webspark-form-buttons'],
         ),
       ],
     });
@@ -134,10 +134,10 @@ export class WebsparkTableFormView extends View {
     // Since the form is in the dropdown panel which is a child of the toolbar, the toolbar's
     // keystroke handler would take over the key management in the URL input. We need to prevent
     // this ASAP. Otherwise, the basic caret movement using the arrow keys will be impossible.
-    this.keystrokes.set("arrowright", stopPropagation);
-    this.keystrokes.set("arrowleft", stopPropagation);
-    this.keystrokes.set("arrowup", stopPropagation);
-    this.keystrokes.set("arrowdown", stopPropagation);
+    this.keystrokes.set('arrowright', stopPropagation);
+    this.keystrokes.set('arrowleft', stopPropagation);
+    this.keystrokes.set('arrowup', stopPropagation);
+    this.keystrokes.set('arrowdown', stopPropagation);
   }
 
   destroy() {
@@ -196,7 +196,7 @@ export class WebsparkTableFormView extends View {
     this.cols = values?.cols || this.DEFAULT_COLS;
     this.headers = values?.headers || this.DEFAULT_HEADER;
     this.tabletype = values?.tabletype || this.DEFAULT_TYPE;
-    this.caption = values?.caption || "";
+    this.caption = values?.caption || '';
   }
 
   isValid() {
@@ -206,10 +206,12 @@ export class WebsparkTableFormView extends View {
       const errorText = validator(this);
 
       if (errorText) {
-        if (errorText.includes("text")) {
-          this.textInputRowsView.errorText = errorText;
-        } else if (errorText.includes("URL")) {
-          this.textInputColsView.errorText = errorText;
+        if (errorText.includes('rows')) {
+          this.textInputRowsView.children[2].text = errorText;
+        } else if (errorText.includes('cols')) {
+          this.textInputColsView.children[2].text = errorText;
+        } else if (errorText.includes('caption')) {
+          this.textCaption.children[2].text = errorText;
         }
         return false;
       }
@@ -219,8 +221,9 @@ export class WebsparkTableFormView extends View {
   }
 
   resetFormStatus() {
-    this.textInputRowsView.errorText = null;
-    this.textInputColsView.errorText = null;
+    this.textInputRowsView.children[2].text = '';
+    this.textInputColsView.children[2].text = '';
+    this.textCaption.children[2].text = '';
   }
 
   /**
@@ -232,20 +235,20 @@ export class WebsparkTableFormView extends View {
   _getHeaderOptions(t) {
     return [
       {
-        value: "none",
-        title: t("None"),
+        value: 'none',
+        title: t('None'),
       },
       {
-        value: "row",
-        title: t("First row"),
+        value: 'row',
+        title: t('First row'),
       },
       {
-        value: "column",
-        title: t("First column"),
+        value: 'column',
+        title: t('First column'),
       },
       {
-        value: "both",
-        title: t("Both"),
+        value: 'both',
+        title: t('Both'),
       },
     ];
   }
@@ -259,12 +262,12 @@ export class WebsparkTableFormView extends View {
   _getTableTypeOptions(t) {
     return [
       {
-        value: "default",
-        title: t("Default"),
+        value: 'default',
+        title: t('Default'),
       },
       {
-        value: "fixed",
-        title: t("Fixed"),
+        value: 'fixed',
+        title: t('Fixed'),
       },
     ];
   }
@@ -276,9 +279,9 @@ function prepareListOptions(options) {
   // Create dropdown items.
   for (const option of options) {
     const def = {
-      type: "button",
+      type: 'button',
       model: new ViewModel({
-        commandName: "websparkTable",
+        commandName: 'websparkTable',
         commandParam: option.model,
         label: option.title,
         withText: true,

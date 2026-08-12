@@ -1,5 +1,5 @@
 select2overrides:
-  version: 2.19.1
+  version: 2.19.2
   js:
     js/select2-overrides.js: {}
   css:

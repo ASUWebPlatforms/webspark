@@ -16,6 +16,12 @@ settings:
     -
       value: text-white
       label: White
+    -
+      value: highlight-gold
+      label: 'Gold highlight'
+    -
+      value: highlight-white
+      label: 'White background'
   allowed_values_function: ''
 module: options
 locked: false

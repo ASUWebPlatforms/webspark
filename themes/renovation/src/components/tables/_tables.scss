@@ -18,3 +18,31 @@
     margin-bottom: 0;
   }
 }
+
+// Accessibility (WCAG 2.1.1 Keyboard): the UDS base styles hide the fixed-table
+// scroll controls with `display: none` and only reveal them on mouse `:hover`.
+// A `display: none` button cannot receive keyboard focus, so keyboard-only users
+// can never reach the Previous/Next controls (and therefore the off-screen
+// columns). Keep the controls in the tab order by hiding them with `opacity`
+// instead, and reveal them on hover OR when keyboard focus enters the wrapper.
+.uds-table-fixed-wrapper {
+  .scroll-control {
+    display: block;
+    opacity: 0;
+
+    // Invisible buttons must not intercept mouse clicks on the underlying
+    // table edge cells while hidden (the button itself sets pointer-events).
+    button {
+      pointer-events: none;
+    }
+  }
+
+  &:hover .scroll-control,
+  &:focus-within .scroll-control {
+    opacity: 1;
+
+    button {
+      pointer-events: auto;
+    }
+  }
+}

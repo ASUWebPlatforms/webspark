@@ -1,5 +1,5 @@
 components-library:
-  version: 2.19.1
+  version: 2.19.2
   dependencies:
     - core/drupal
     - core/drupalSettings
@@ -8,7 +8,7 @@ components-library:
     js/asu_footer.footer.js: {}
 
 footer-block:
-  version: 2.19.1
+  version: 2.19.2
   dependencies:
     - core/drupal
     - core/once

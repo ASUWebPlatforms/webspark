@@ -1063,3 +1063,37 @@ function webspark_update_10025(&$sandbox): void {
     ->save();
   \Drupal::state()->set('configuration_locked', TRUE);
 }
+
+/**
+ * Add Gold highlight and White background options to the Text Color field.
+ *
+ * appends new allowed values to
+ * field.storage.block_content.field_text_color so existing values already
+ * stored on content are never altered. uses the highlight-gold and
+ * highlight-white CSS classes
+ */
+function webspark_update_10026(&$sandbox): void {
+  \Drupal::state()->set('configuration_locked', FALSE);
+
+  $field_storage = FieldStorageConfig::loadByName('block_content', 'field_text_color');
+  if ($field_storage) {
+    $allowed_values = $field_storage->getSetting('allowed_values');
+    $new_values = [
+      'highlight-gold' => 'Gold highlight',
+      'highlight-white' => 'White background',
+    ];
+    $changed = FALSE;
+    foreach ($new_values as $value => $label) {
+      if (!isset($allowed_values[$value])) {
+        $allowed_values[$value] = $label;
+        $changed = TRUE;
+      }
+    }
+    if ($changed) {
+      $field_storage->setSetting('allowed_values', $allowed_values);
+      $field_storage->save();
+    }
+  }
+
+  \Drupal::state()->set('configuration_locked', TRUE);
+}

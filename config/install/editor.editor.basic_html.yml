@@ -48,8 +48,8 @@ settings:
       allow_resize: true
     ckeditor5_list:
       properties:
-        reversed: false
-        startIndex: false
+        reversed: true
+        startIndex: true
       multiBlock: true
     ckeditor5_sourceEditing:
       allowed_tags:

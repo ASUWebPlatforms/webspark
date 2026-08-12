@@ -9,6 +9,7 @@ dependencies:
     - editor
     - linkit
     - media
+    - webspark_ckeditor_plugins
 name: 'Full HTML'
 format: full_html
 weight: 2
@@ -103,3 +104,9 @@ filters:
         image: image
         image_block_images: image_block_images
         remote_video: remote_video
+  webspark_reversed_list_start:
+    id: webspark_reversed_list_start
+    provider: webspark_ckeditor_plugins
+    status: true
+    weight: 0
+    settings: {  }
