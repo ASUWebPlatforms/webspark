@@ -1,0 +1,27 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - filter.format.basic_html
+    - filter.format.webform_default
+  module:
+    - contact
+    - file
+    - filter
+    - media
+    - search
+    - shortcut
+    - system
+id: authenticated
+label: 'Authenticated user'
+weight: 1
+is_admin: false
+permissions:
+  - 'access content'
+  - 'access shortcuts'
+  - 'access site-wide contact form'
+  - 'delete own files'
+  - 'search content'
+  - 'use text format basic_html'
+  - 'use text format webform_default'
+  - 'view media'

@@ -1,0 +1,216 @@
+<?php
+use Drupal\Component\Utility\Html;
+use Symfony\Component\Validator\Constraints\IsNull;
+use Drupal\media\Entity\Media;
+use Drupal\file\Entity\File;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\row\EntityRow;
+use Drupal\Core\Template\Attribute;
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Render\Markup;
+use Drupal\filter\Entity\FilterFormat;
+use Drupal\webspark_views\Plugin\views\style\CardViewFormat;
+use Drupal\Core\Url;
+
+/**
+ * @file
+ * Primary module hooks for Webspark Views module.
+ */
+
+/**
+ * Prepares variables for card view format template.
+ *
+ * Default template: views-view-webspark-card-view-format.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: A View object.
+ */
+function template_preprocess_views_view_webspark_card_view_format(&$variables) {
+  $view = $variables['view'];
+  $view_id = $view->id();
+  $rows = $variables['rows'];
+  $style = $view->style_plugin;
+  $options = $style->options;
+
+  // fields configured in style settings
+  if (isset($options['field_mapping'])) {
+    $media_field = $options['field_mapping']['media'];
+    $body_field = $options['field_mapping']['body'];
+    $cta_field = $options['field_mapping']['cta'];
+
+    foreach ($rows as $id => $row) {
+      $variables['rows'][$id] = [];
+      $variables['rows'][$id]['content'] = $row;
+      $variables['rows'][$id]['attributes'] = new Attribute();
+
+      $entity = $row['#row']->_entity;
+
+      // Everything that used to be loose $title/$img_url/$body/$links
+      // scalars now comes back as a fresh array from this call, every
+      // iteration. No leftover state from row $id - 1 is possible because
+      // there's no shared scope for it to survive in.
+      $card_data = _webspark_views_build_card_row(
+        $entity,
+        $media_field,
+        $body_field,
+        $cta_field,
+        $options
+      );
+
+      $variables['rows'][$id]['title'] = $card_data['title'];
+      $variables['rows'][$id]['img_url'] = $card_data['img_url'];
+      $variables['rows'][$id]['img_alt'] = $card_data['img_alt'];
+      $variables['rows'][$id]['body'] = $card_data['body'];
+      $variables['rows'][$id]['links'] = $card_data['links'];
+
+      if ($row_class = $view->style_plugin->getRowClass($id)) {
+        $variables['rows'][$id]['attributes']->addClass($row_class);
+      }
+    }
+  }
+
+  $variables['options'] = $options;
+  $variables['view_name'] = $view_id;
+}
+
+/**
+ * Builds the title/image/body/links values for a single card row.
+ *
+ * Runs in its own function scope so every call starts with a clean slate -
+ * nothing here can inherit a value left over from a previous row.
+ *
+ * @param mixed $entity
+ *   The row's entity (expected to be a node; anything else returns nulls).
+ * @param string|null $media_field
+ *   Machine name of the media field, or empty/null if not configured.
+ * @param string|null $body_field
+ *   Machine name of the body field, or empty/null if not configured.
+ * @param string|null $cta_field
+ *   Machine name of the CTA/link field, or empty/null if not configured.
+ * @param array $options
+ *   The style plugin's options array (used for body_text_format).
+ *
+ * @return array
+ *   Associative array with keys: title, img_url, img_alt, body, links.
+ *   Any value not applicable to this row is NULL.
+ */
+function _webspark_views_build_card_row($entity, $media_field, $body_field, $cta_field, array $options): array {
+  $card = [
+    'title' => NULL,
+    'img_url' => NULL,
+    'img_alt' => NULL,
+    'body' => NULL,
+    'links' => NULL,
+  ];
+
+  if (!$entity instanceof \Drupal\node\NodeInterface) {
+    return $card;
+  }
+
+  $node = \Drupal::entityTypeManager()->getStorage('node')->load($entity->id());
+  if (!$node) {
+    return $card;
+  }
+
+  $card['title'] = $node->get('title')->value;
+
+  if (is_string($media_field) && !empty($media_field)) {
+    $card['img_url'] = _webspark_views_get_img_url($node, $media_field);
+    $card['img_alt'] = _webspark_views_get_img_alt($node, $media_field);
+  }
+
+  if (is_string($body_field) && !empty($body_field)) {
+    $card['body'] = _webspark_views_get_body($node, $body_field, $options);
+  }
+
+  if (is_string($cta_field) && !empty($cta_field)) {
+    $card['links'] = _webspark_views_get_links($node, $cta_field);
+  }
+
+  return $card;
+}
+
+/**
+ * Resolves the card image URL from the configured media field.
+ */
+function _webspark_views_get_img_url($node, string $media_field): ?string {
+  $mid = $node->get($media_field)->getString();
+  $media = Media::load($mid);
+  if ($media && $media->field_media_image->target_id) {
+    $fid = $media->field_media_image->target_id;
+    $file = File::load($fid);
+    return $file ? $file->createFileUrl() : NULL;
+  }
+  return NULL;
+}
+
+/**
+ * Resolves the card image alt text from the configured media field.
+ */
+function _webspark_views_get_img_alt($node, string $media_field): ?string {
+  $mid = $node->get($media_field)->getString();
+  $media = Media::load($mid);
+  if ($media && $media->field_media_image->target_id) {
+    return $media->field_media_image->alt;
+  }
+  return NULL;
+}
+
+/**
+ * Builds the sanitized, length-limited card body markup.
+ */
+function _webspark_views_get_body($node, string $body_field, array $options): ?Markup {
+  $bodyField = $node->get($body_field);
+  if ($bodyField->isEmpty()) {
+    return NULL;
+  }
+
+  // Checking field for summary, will use if available.
+  $summary = $node->get($body_field)->summary;
+  $bodyRaw = !empty($summary) ? $summary : $node->get($body_field)->value;
+
+  // Resolve the configured text format for the card body, falling back
+  // gracefully so a missing/disabled format never fatals.
+  $format_id = !empty($options['body_text_format'])
+    ? $options['body_text_format']
+    : CardViewFormat::DEFAULT_BODY_TEXT_FORMAT;
+  $format = FilterFormat::load($format_id);
+  if (!$format || !$format->status()) {
+    $format = FilterFormat::load(CardViewFormat::DEFAULT_BODY_TEXT_FORMAT);
+  }
+  $format_id = $format ? $format->id() : filter_fallback_format();
+
+  // Run the body through the text format so allowed markup is preserved
+  // and sanitized (instead of stripping all tags).
+  $filtered = (string) check_markup($bodyRaw, $format_id);
+
+  // Length guard: trim to 500 chars, then re-balance any tags the
+  // truncation may have chopped so the markup stays valid.
+  if (mb_strlen($filtered) > 500) {
+    $filtered = Unicode::truncate($filtered, 500, TRUE, TRUE);
+    $filtered = Html::normalize($filtered);
+  }
+
+  // check_markup() output is already sanitized; mark it safe so the
+  // template can print it without escaping or a |raw filter.
+  return Markup::create($filtered);
+}
+
+/**
+ * Builds the card's CTA links from the configured link field.
+ */
+function _webspark_views_get_links($node, string $cta_field): array {
+  $links = [];
+  $linkValues = $node->get($cta_field);
+  foreach ($linkValues as $linkValue) {
+    $link = [];
+    $linkString = $linkValue->uri; // not resolvable link for internal links
+    $url_object = Url::fromUri($linkString);
+    $link['href'] = $url_object->toString(); // resolvable
+    $link['text'] = $linkValue->title ? $linkValue->title : 'Read More';
+    $links[] = $link;
+  }
+  return $links;
+}
