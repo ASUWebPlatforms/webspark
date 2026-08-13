@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - webspark_webdir
+id: asu_profile.grid
+label: 'Grid'
+targetEntityType: asu_profile
+cache: true
+

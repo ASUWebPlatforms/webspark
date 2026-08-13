@@ -1,0 +1,5 @@
+name: Webspark Frontpage
+type: module
+description: Manages the default frontpage of new Webspark installs.
+package: Webspark
+core_version_requirement: ^10

@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.video_hero
+    - field.storage.block_content.field_poster_alt_text
+id: block_content.video_hero.field_poster_alt_text
+field_name: field_poster_alt_text
+entity_type: block_content
+bundle: video_hero
+label: 'Poster Alt Text'
+description: 'Alternative text for the poster image. This will be used if the media image does not have alt text set.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
