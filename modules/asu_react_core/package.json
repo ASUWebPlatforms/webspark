@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@asu/unity-react-core": "1.11.4"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "postinstall": "yarn build"
+  }
+}

@@ -1,0 +1,40 @@
+{{ attach_library('renovation/tabbed-panels') }}
+{% set panel_id = panel_id ?? 'panel' %}
+
+<nav class="uds-tabbed-panels uds-content-align {{ is_dark ? 'uds-tabbed-panels-dark' }}" aria-label="tabbed panels">
+  <div class="nav nav-tabs" id="{{ panel_id }}-nav" role="tablist">
+    {% for tab in tabs %}
+      <button
+        type="button"
+        class="nav-item nav-link {{ loop.first ? 'active' }}"
+        id="{{ panel_id }}-{{ loop.index }}"
+        role="tab"
+        aria-controls="nav-{{ panel_id }}-{{ loop.index }}"
+        aria-selected="{{ loop.first ? 'true' : 'false' }}"
+        tabindex="{{ loop.first ? '0' : '-1' }}"
+        data-ga="{{ tab.heading }}"
+        data-ga-name="onclick"
+        data-ga-event="link"
+        data-ga-action="click"
+        data-ga-type="internal link"
+        data-ga-section="{{ label }}"
+        data-ga-region="main content"
+        data-ga-text="{{ tab.heading }}">
+        {{ tab.heading }}
+      </button>
+    {% endfor %}
+  </div>
+</nav>
+
+<div class="tab-content" id="{{ panel_id }}-content" tabindex="0" role="tabpanel">
+  {% for tab in tabs %}
+    <div
+      class="tab-pane fade {{ loop.first ? 'show active' }} {{ is_dark ? 'text-white' }}"
+      id="nav-{{ panel_id }}-{{ loop.index }}"
+      role="tabpanel"
+      aria-labelledby="{{ panel_id }}-{{ loop.index }}">
+      {{ tab.copy|raw }}
+      {{ tab.blocks }}
+    </div>
+  {% endfor %}
+</div>

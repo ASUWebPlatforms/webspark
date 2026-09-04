@@ -1,0 +1,61 @@
+webspark_webdir.settings:
+  type: config_object
+  label: 'Webspark Web Directory settings'
+  mapping:
+    api:
+      type: string
+      label: 'API URL'
+    api_version:
+      type: string
+      label: 'API version'
+    departments:
+      type: string
+      label: 'Departments endpoint'
+    people_departments:
+      type: string
+      label: 'People departments endpoint'
+    people_search:
+      type: string
+      label: 'People search endpoint'
+    people_data:
+      type: string
+      label: 'People data endpoint'
+    people_department:
+      type: string
+      label: 'People department endpoint'
+    profile_affiliations:
+      type: string
+      label: 'Profile affiliations endpoint'
+    employee_types:
+      type: string
+      label: 'Employee types endpoint'
+    expertise_areas:
+      type: string
+      label: 'Expertise areas endpoint'
+    filtered_people_department:
+      type: string
+      label: 'Filtered people department endpoint'
+
+block.settings.profile_list_block:
+  type: block_settings
+  label: 'Profile List block settings'
+  mapping:
+    display_format:
+      type: string
+      label: 'Display format'
+    profiles:
+      type: sequence
+      label: 'Profiles'
+      sequence:
+        type: mapping
+        label: 'Profile entry'
+        mapping:
+          source:
+            type: string
+            label: 'Profile source'
+          profile_id:
+            type: integer
+            label: 'Profile entity ID'
+          asurite:
+            type: string
+            label: 'ASURITE ID'

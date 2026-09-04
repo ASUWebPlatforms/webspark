@@ -1,0 +1,7 @@
+endpoint_url: ''
+api_key: ''
+capabilities:
+  chat: false
+  chat_with_rag: false
+enable_search: false
+enable_history: false
