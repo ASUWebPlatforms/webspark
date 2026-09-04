@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@asu/component-events": "3.2.1"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "postinstall": "yarn build"
+  }
+}
