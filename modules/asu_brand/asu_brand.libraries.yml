@@ -1,0 +1,16 @@
+components-library:
+  version: 2.19.5
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - asu_react_integration/reactjs
+  js:
+    dist/asu_brand.min.js: {}
+  css:
+    component:
+      css/asu_brand.header.css: {}
+block__system_main_block:
+  version: 2.19.5
+  css:
+    theme:
+      css/asu-brand-edit-form.css: {}

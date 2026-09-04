@@ -1,0 +1,9 @@
+news-component:
+  version: 2.19.5
+  dependencies:
+    - asu_react_integration/reactjs
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+  js:
+    dist/asu_news.min.js: { }
