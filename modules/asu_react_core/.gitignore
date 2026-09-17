@@ -1,0 +1,8 @@
+# NodeJS projects
+node_modules/
+
+# Built artifact (committed so no build step is required at deploy time)
+!dist/
+
+.idea/
+.DS_Store

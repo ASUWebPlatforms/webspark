@@ -1,0 +1,13 @@
+.uds-grid > .row {
+  gap: 1rem;
+}
+
+.uds-grid > .row > div {
+  flex: 0 0 282px;
+}
+
+.uds-grid-profile ul.person-contact-info [class*="fa-"] {
+  display: inline;
+  color: rgb(140, 29, 64);
+  padding-right: 8px;
+}

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@asu/component-news": "4.2.2"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "postinstall": "yarn build"
+  }
+}

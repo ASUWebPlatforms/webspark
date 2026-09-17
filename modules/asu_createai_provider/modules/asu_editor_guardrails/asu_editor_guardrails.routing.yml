@@ -1,0 +1,7 @@
+asu_editor_guardrails.settings_form:
+  path: '/admin/config/ai/safety-compliance/editor-guardrails'
+  defaults:
+    _form: '\Drupal\asu_editor_guardrails\Form\SettingsForm'
+    _title: 'ASU Editor Guardrails settings'
+  requirements:
+    _permission: 'administer ai'
