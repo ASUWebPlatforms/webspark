@@ -1,0 +1,16 @@
+name: ASU Editor Guardrails
+description: Security/abuse/privacy guardrails for ai_ckeditor and ai_automators (CSRF + flood control on the CKEditor AI endpoint, publish/access gate and edit_mode cooldown for automators, forced-safe-format enforcement on markup-producing automator output).
+# TODO: unify with asu_createai_provider's "AI Providers" package so they group together on /admin/modules.
+package: AI Tools
+type: module
+core_version_requirement: ^10.4 || ^11
+configure: asu_editor_guardrails.settings_form
+
+# ai:ai_ckeditor is intentionally NOT a hard dependency: RouteSubscriber
+# already no-ops safely if ai_ckeditor.do_request doesn't exist, so this
+# module can protect ai_automators alone without waiting for ai_ckeditor.
+# Its CKEditor flood-control route-hardening activates automatically the
+# moment ai_ckeditor is later enabled too.
+dependencies:
+  - ai:ai
+  - ai:ai_automators

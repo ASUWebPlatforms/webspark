@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Install/update hooks for the CreateAI Provider module.
+ */
+
+/**
+ * Migrates single-agent config to the multi-agent 'agents' list shape.
+ */
+function asu_createai_provider_update_10001(): void {
+  $config = \Drupal::configFactory()->getEditable('asu_createai_provider.settings');
+
+  // Already migrated (fresh install, or update already ran).
+  if ($config->get('agents')) {
+    return;
+  }
+
+  $endpoint_url = (string) ($config->get('endpoint_url') ?? '');
+  $api_key = (string) ($config->get('api_key') ?? '');
+  $declared = $config->get('capabilities') ?? [];
+
+  $default_agent = [
+    'id' => 'default',
+    'label' => 'CreateAI project default',
+    'endpoint_url' => $endpoint_url,
+    'api_key' => $api_key,
+    'capabilities' => [
+      'chat' => !empty($declared['chat']),
+      'chat_with_rag' => !empty($declared['chat_with_rag']),
+    ],
+    'enable_search' => (bool) $config->get('enable_search'),
+    'enable_history' => (bool) $config->get('enable_history'),
+  ];
+
+  $config
+    ->clear('endpoint_url')
+    ->clear('api_key')
+    ->clear('capabilities')
+    ->clear('enable_search')
+    ->clear('enable_history')
+    ->set('default_agent', 'default')
+    ->set('agents', [$default_agent])
+    ->save();
+}

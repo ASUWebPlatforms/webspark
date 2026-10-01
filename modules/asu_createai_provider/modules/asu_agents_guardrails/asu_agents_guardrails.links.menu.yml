@@ -1,0 +1,5 @@
+asu_agents_guardrails.settings_menu:
+  title: 'ASU Agents Guardrails'
+  description: 'Configure rate limits for the ai_agents write-tool guardrails.'
+  route_name: asu_agents_guardrails.settings_form
+  parent: ai.admin_config_safety

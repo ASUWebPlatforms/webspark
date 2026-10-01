@@ -1,0 +1,17 @@
+services:
+  asu_editor_guardrails.route_subscriber:
+    class: Drupal\asu_editor_guardrails\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  asu_editor_guardrails.ckeditor_flood_access_check:
+    class: Drupal\asu_editor_guardrails\Access\CkeditorFloodAccessCheck
+    arguments: ['@flood', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _asu_editor_guardrails_flood }
+
+  asu_editor_guardrails.automator_guardrail_subscriber:
+    class: Drupal\asu_editor_guardrails\EventSubscriber\AutomatorGuardrailSubscriber
+    arguments: ['@flood', '@config.factory', '@current_user']
+    tags:
+      - { name: event_subscriber }
