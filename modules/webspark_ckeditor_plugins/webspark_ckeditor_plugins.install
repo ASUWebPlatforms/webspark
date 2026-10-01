@@ -1,0 +1,29 @@
+<?php
+
+use Drupal\editor\Entity\Editor;
+
+/**
+ * Remove websparkBlockquoteAnimated from the basic_html editor toolbar.
+ *
+ * The animated quote plugin outputs <h3 class="h1"> and <h2 class="h4"> which
+ * are stripped by filter_html (basic_html only allows <h2 id> and <h3 id>),
+ * causing data corruption on round-trip editing. Restrict to full_html only.
+ *
+ * @see https://asu.atlassian.net/browse/WS2-2797
+ */
+function webspark_ckeditor_plugins_update_10002() {
+  $editor = Editor::load('basic_html');
+  if (!$editor) {
+    return;
+  }
+
+  $settings = $editor->getSettings();
+  $items = $settings['toolbar']['items'] ?? [];
+  $key = array_search('websparkBlockquoteAnimated', $items, TRUE);
+  if ($key !== FALSE) {
+    unset($items[$key]);
+    $settings['toolbar']['items'] = array_values($items);
+    $editor->setSettings($settings);
+    $editor->save();
+  }
+}

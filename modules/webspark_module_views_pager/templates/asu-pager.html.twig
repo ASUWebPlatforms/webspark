@@ -1,0 +1,46 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a views mini-pager.
+ *
+ * Available variables:
+ * - heading_id: Pagination heading ID.
+ * - items: List of pager items.
+ *
+ * @see template_preprocess_views_mini_pager()
+ *
+ * @ingroup themeable
+ */
+#}
+
+{% if alignment == 'right' %}
+  {% set alignment = 'justify-content-end' %}
+{% elseif alignment == 'center' %}
+  {% set alignment = 'justify-content-center' %}
+{% else %}
+  {% set alignment = '' %}
+{% endif %}
+{% set show_last = true %}
+{% if show_icons == 1 %}
+  {% set page_link_icon = ' page-link-icon' %}
+{% else %}
+  {% set page_link_icon = '' %}
+{% endif %}
+
+{# DESKTOP #}
+{% set items = desktop.items %}
+{% set ellipses = desktop.ellipses %}
+{% if items %}
+  <div class="d-none d-lg-block">
+    {% include '@webspark_module_views_pager/templates/asu-pager-nav.html.twig' %}
+  </div>
+{% endif %}
+
+{# MOBILE #}
+{% set items = mobile.items %}
+{% set ellipses = mobile.ellipses %}
+{% if items %}
+  <div class="d-lg-none">
+    {% include '@webspark_module_views_pager/templates/asu-pager-nav.html.twig' %}
+  </div>
+{% endif %}

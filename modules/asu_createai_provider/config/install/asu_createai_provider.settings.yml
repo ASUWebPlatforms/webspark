@@ -1,0 +1,12 @@
+default_agent: default
+agents:
+  -
+    id: default
+    label: 'CreateAI project default'
+    endpoint_url: ''
+    api_key: ''
+    capabilities:
+      chat: false
+      chat_with_rag: false
+    enable_search: false # These come directly from the CreateAI docs
+    enable_history: false # These come directly from the CreateAI docs

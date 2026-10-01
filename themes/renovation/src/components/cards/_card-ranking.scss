@@ -1,0 +1,6 @@
+// TODO: Move this code to UDS
+.card-ranking {
+  @media screen and (min-width: $uds-grid-container-max-width-md) {
+    width: 100%;
+  }
+}

@@ -1,0 +1,13 @@
+.history/
+.cache
+
+# NodeJS projects
+node_modules/
+
+# Built artifacts (committed so no build step is required at deploy time).
+# Includes the bundled JS and the colocated runtime image assets.
+!dist/
+
+/vendor/
+
+.idea

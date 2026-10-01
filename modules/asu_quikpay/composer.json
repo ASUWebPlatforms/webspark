@@ -1,0 +1,20 @@
+{
+    "name": "drupal/asu_quikpay",
+    "description": "Module created to handle off-site payment hosted at QuikPay by Nelnet.",
+    "type": "drupal-module",
+    "require": {
+        "drupal/commerce": "^2.33",
+        "drupal/address": "^1.11",
+        "drupal/entity": "^1.4",
+        "drupal/inline_entity_form": "^1.0@RC",
+        "drupal/profile": "^1.7",
+        "drupal/state_machine": "^1.7"
+    },
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Isaac Garduno",
+            "email": "igardun1@asu.edu"
+        }
+    ]
+}

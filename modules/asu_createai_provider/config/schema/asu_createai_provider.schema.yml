@@ -1,0 +1,45 @@
+asu_createai_provider.settings:
+  type: config_object
+  label: 'CreateAI Provider settings'
+  mapping:
+    default_agent:
+      type: string
+      label: 'Machine name of the agent exposed as the legacy default model'
+    agents:
+      type: sequence
+      label: 'Configured CreateAI agents'
+      sequence:
+        type: asu_createai_provider.agent
+
+asu_createai_provider.agent:
+  type: mapping
+  label: 'CreateAI agent'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'
+    endpoint_url:
+      type: string
+      label: 'CreateAI OpenAI-compatible endpoint URL, e.g. https://api-main.aiml.asu.edu/v1'
+    api_key:
+      type: string
+      label: 'The Key module key ID storing the CreateAI service token'
+    capabilities:
+      type: mapping
+      label: 'Declared capabilities'
+      mapping:
+        chat:
+          type: boolean
+          label: 'Chat'
+        chat_with_rag:
+          type: boolean
+          label: 'Chat with RAG'
+    enable_search:
+      type: boolean
+      label: "Send the enable_search header (uses the CreateAI project's own knowledge base for RAG)"
+    enable_history:
+      type: boolean
+      label: 'Send the enable_history header and a session_id to enable conversation memory'

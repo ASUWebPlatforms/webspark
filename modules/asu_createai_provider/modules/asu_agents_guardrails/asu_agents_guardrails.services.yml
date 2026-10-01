@@ -1,0 +1,10 @@
+services:
+  asu_agents_guardrails.agent_write_subscriber:
+    class: Drupal\asu_agents_guardrails\EventSubscriber\AgentWriteGuardrailSubscriber
+    arguments: ['@flood', '@logger.channel.asu_agents_guardrails', '@current_user', '@config.factory']
+    tags:
+      - { name: event_subscriber }
+
+  logger.channel.asu_agents_guardrails:
+    parent: logger.channel_base
+    arguments: ['asu_agents_guardrails']
