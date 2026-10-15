@@ -1,0 +1,5 @@
+asu_editor_guardrails.settings_menu:
+  title: 'ASU Editor Guardrails'
+  description: 'Configure rate limits for the ai_ckeditor and ai_automators guardrails.'
+  route_name: asu_editor_guardrails.settings_form
+  parent: ai.admin_config_safety

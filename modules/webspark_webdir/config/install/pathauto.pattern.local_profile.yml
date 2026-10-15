@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - webspark_webdir
+id: local_profile
+label: 'Local Profile'
+type: 'canonical_entities:asu_profile'
+pattern: 'profile/[asu_profile:first_name]-[asu_profile:display_last_name]'
+selection_criteria: {  }
+selection_logic: and
+weight: 0
+relationships: {  }

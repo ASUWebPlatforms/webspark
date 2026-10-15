@@ -1,0 +1,4 @@
+use unbranded webspark:
+  title: 'Use Unbranded Webspark'
+  description: 'Enable and configure Unbranded Webspark mode in ASU Brand settings. Grant only for approved unbranded sites.'
+  restrict access: true
