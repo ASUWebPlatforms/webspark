@@ -1,5 +1,5 @@
 components-library:
-  version: 2.20.0
+  version: 2.20.1
   dependencies:
     - core/drupal
     - core/drupalSettings
@@ -10,7 +10,7 @@ components-library:
     component:
       css/asu_brand.header.css: {}
 block__system_main_block:
-  version: 2.20.0
+  version: 2.20.1
   css:
     theme:
       css/asu-brand-edit-form.css: {}
