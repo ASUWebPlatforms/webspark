@@ -1,0 +1,19 @@
+asu_editor_guardrails.settings:
+  type: config_object
+  label: 'ASU Editor Guardrails settings'
+  mapping:
+    ckeditor_limit:
+      type: integer
+      label: 'Max ai_ckeditor requests per window, per user'
+    ckeditor_window:
+      type: integer
+      label: 'ai_ckeditor flood window, in seconds'
+    automator_cooldown:
+      type: integer
+      label: 'Minimum seconds between automator re-triggers for the same entity/field'
+    automator_user_limit:
+      type: integer
+      label: 'Max automator-eligible saves per acting user, per automator_user_window'
+    automator_user_window:
+      type: integer
+      label: 'automator_user_limit window, in seconds'

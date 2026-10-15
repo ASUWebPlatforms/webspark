@@ -1,0 +1,10 @@
+asu_agents_guardrails.settings:
+  type: config_object
+  label: 'ASU Agents Guardrails settings'
+  mapping:
+    write_limit:
+      type: integer
+      label: 'Max guarded-tool executions per acting user, per write_window'
+    write_window:
+      type: integer
+      label: 'write_limit window, in seconds'

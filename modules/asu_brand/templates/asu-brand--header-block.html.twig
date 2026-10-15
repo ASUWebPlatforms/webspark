@@ -1,0 +1,118 @@
+{#
+  Static HTML header rendered server-side for SEO/AI link visibility.
+  React will replace the contents of #ws2HeaderContainer
+  on the client side after JS loads.
+#}
+<div id="ws2HeaderContainer">
+  {#
+    The visually-hidden class and aria-hidden live on the static markup itself
+    (not the container) so React's output — which renders into #ws2HeaderContainer —
+    is visible immediately with no flash of unstyled content. Screen readers skip
+    the static markup while crawlers (which don't parse ARIA) still index the links.
+    When React mounts it replaces this markup entirely. The inline style guarantees
+    the markup is hidden the instant it is parsed, before the external stylesheet
+    loads, so there is never a flash of unstyled content.
+  #}
+  <header id="asuHeader" class="asu-header-seo-pending" aria-hidden="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+    {# Universal navbar — hardcoded ASU links matching component-header-footer #}
+    <nav aria-label="ASU Global">
+      <a href="#skip-to-content">Skip to main content</a>
+      <a href="https://accessibility.asu.edu/report">Report an accessibility problem</a>
+      <a href="https://asu.edu">ASU Home</a>
+      <a href="https://my.asu.edu">My ASU</a>
+      <a href="https://www.asu.edu/academics/colleges-schools">Colleges and Schools</a>
+      <a href="{{ login_link }}">Sign In</a>
+    </nav>
+
+    <div class="header-main">
+      {% if logo %}
+        <a href="{{ logo.brandLink }}" class="header-logo" aria-label="{{ logo.alt }}">
+          <img
+            src="{{ logo.src }}"
+            alt="{{ logo.alt }}"
+            title="{{ logo.title }}"
+          />
+        </a>
+      {% endif %}
+
+      <div class="header-site-info">
+        {% if parent_org %}
+          <div class="header-parent-org">
+            {% if parent_org_url %}
+              <a href="{{ parent_org_url }}">{{ parent_org }}</a>
+            {% else %}
+              {{ parent_org }}
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if title %}
+          <div class="header-site-title">
+            <a href="{{ header_base_url }}">{{ title }}</a>
+          </div>
+        {% endif %}
+      </div>
+      {% if is_partner and partner_logo %}
+        <div class="header-partner-logo">
+          <a href="{{ partner_logo.brandLink ?? header_base_url }}">
+            <img src="{{ partner_logo.src }}" alt="{{ partner_logo.alt ?? '' }}" />
+          </a>
+        </div>
+      {% endif %}
+      {% if buttons %}
+        <div class="header-buttons">
+          {% for button in buttons %}
+            <a href="{{ button.href }}" class="btn btn-{{ button.color }}">{{ button.text }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# Navigation #}
+    {% if nav_tree %}
+      <nav aria-label="Main navigation">
+        <ul class="nav-main">
+          {% for item in nav_tree %}
+            <li class="nav-item{% if item.type == 'icon-home' %} home{% endif %}">
+              <a href="{{ item.href }}" class="nav-link">{{ item.text }}</a>
+
+              {# Level 2: dropdown columns #}
+              {% if item.items %}
+                <ul class="nav-dropdown">
+                  {% for col in item.items %}
+                    {% for child in col %}
+                      <li class="nav-dropdown-item{% if child.type %} {{ child.type|replace({' ': '-'}) }}{% endif %}">
+                        <a href="{{ child.href }}" class="nav-link">{{ child.text }}</a>
+
+                        {# Level 3: children of headings #}
+                        {% if child.children %}
+                          <ul class="nav-dropdown-sub">
+                            {% for grandchild in child.children %}
+                              <li>
+                                <a href="{{ grandchild.href }}" class="nav-link">{{ grandchild.text }}</a>
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  {% endfor %}
+                </ul>
+              {% endif %}
+
+              {# Dropdown tray buttons #}
+              {% if item.buttons %}
+                <div class="nav-tray-buttons">
+                  {% for btn in item.buttons %}
+                    <a href="{{ btn.href }}" class="btn btn-{{ btn.color }}">{{ btn.text }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  </header>
+</div>
