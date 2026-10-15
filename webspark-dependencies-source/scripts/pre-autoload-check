@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+# Detect whether we’re running in Acquia Cloud or CI
+if [[ -n "$AH_SITE_ENVIRONMENT" || -n "$CI" ]]; then
+  echo "Detected CI or Acquia Cloud environment."
+
+  if [[ -f "webspark-dependencies/scripts/ComposerScripts.php" || -f "webspark-dependencies/scripts/CustomComposerScripts.php" ]]; then
+    echo "Including webspark composer scripts for CI build..."
+  else
+    echo "Skipping webspark autoload entry in CI — file not found."
+  fi
+else
+  echo "Local build — skipping webspark pre-autoload check."
+fi

@@ -1,0 +1,39 @@
+commerce_payment.commerce_payment_gateway.plugin.quikpay_redirect_checkout:
+  type: commerce_payment_gateway_configuration
+  mapping:
+    order_type:
+      type: string
+      label: 'Order type'
+    quikpay_redirect:
+      type: string
+      label: 'Quikpay Redirect'
+    quikpay_redirect_url:
+      type: string
+      label: 'Redirect URL'
+    quikpay_test_pt_key:
+      type: string
+      label: 'Test PT Key'
+    quikpay_test_rtpn_key:
+      type: string
+      label: 'Test RTPN Key'
+    quikpay_prod_pt_key:
+      type: string
+      label: 'Prod PT Key'
+    quikpay_prod_rtpn_key:
+      type: string
+      label: 'Prod RTPN Key'
+    quikpay_test_url:
+      type: string
+      label: 'Test URL'
+    quikpay_prod_url:
+      type: string
+      label: 'Prod URL'
+    quikpay_success_text:
+      type: string
+      label: 'Success Text'
+    quikpay_checkout_text:
+      type: string
+      label: 'Checkout Text'
+    quikpay_checkout_red:
+      type: string
+      label: 'Checkout Red'
