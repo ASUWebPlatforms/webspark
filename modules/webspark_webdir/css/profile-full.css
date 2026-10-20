@@ -1,0 +1,86 @@
+.uds-person-profile.webspark-webdir-profile {
+  --max-width: 1224px !important;
+  --pic-size: 240px !important;
+}
+
+.uds-person-profile.webspark-webdir-profile .profile-img-container .profile-img-placeholder .profile-img {
+  border-radius: 100%;
+  height: var(--pic-size);
+  width: var(--pic-size);
+}
+
+.uds-person-profile.webspark-webdir-profile .person {
+  max-width: 700px;
+}
+
+.uds-person-profile.webspark-webdir-profile .person ul.person-contact-info {
+  list-style-type: none;
+  display: grid;
+  padding-left: 0;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  margin-bottom: 0;
+}
+
+.uds-person-profile.webspark-webdir-profile .person ul.person-contact-info .noheight {
+  height: 0;
+  margin: unset;
+}
+
+.uds-person-profile.webspark-webdir-profile .profile-img-container {
+  margin-right: 40px;
+  margin-top: 0;
+}
+
+.uds-person-profile.webspark-webdir-profile ul.person-social-medias {
+  margin-top: 2rem;
+  list-style-type: none;
+  display: flex;
+  padding-left: 0;
+  justify-content: center;
+}
+
+.uds-person-profile.webspark-webdir-profile ul.person-social-medias a {
+  margin: 0 0.75rem;
+  color: #191919;
+  font-size: 1.75rem;
+}
+
+.uds-person-profile.webspark-webdir-profile ul.person-social-medias a:hover {
+  color: #8c1d40;
+  border-bottom: 2px solid #8c1d40;
+}
+
+.uds-person-profile.webspark-webdir-profile #primary-affiliation {
+  font-size: 1.5rem;
+  line-height: 32px;
+  letter-spacing: -0.84px;
+}
+
+.uds-person-profile.webspark-webdir-profile #other-affiliations .affiliation {
+  margin-bottom: 12px;
+  line-height: 1.125rem;
+}
+
+.uds-person-profile.webspark-webdir-profile .contact-row1 {
+  margin-top: 20px;
+}
+
+@media only screen and (max-width: 767.98px) {
+  .uds-person-profile.webspark-webdir-profile {
+    margin-top: 36px;
+    max-width: 300px;
+  }
+
+  .uds-person-profile.webspark-webdir-profile .person ul.person-contact-info {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media only screen and (max-width: 991.98px) {
+  .uds-person-profile.webspark-webdir-profile {
+    max-width: unset;
+  }
+}

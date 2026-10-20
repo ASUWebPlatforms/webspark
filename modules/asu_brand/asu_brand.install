@@ -1,0 +1,155 @@
+<?php
+
+/**
+ * Implements hook_update_N();
+ * Set search default settings.
+ */
+function asu_brand_update_9001() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('asu_brand.settings');
+  $config->set('asu_brand.asu_brand_search_url', 'https://search.asu.edu/search');
+  $config->set('asu_brand.asu_brand_local_search_url', $GLOBALS['base_url']);
+  $config->save(TRUE);
+}
+
+/**
+ * Implements hook_update_N();
+ * Delete cookie consent in settings.
+ */
+function asu_brand_update_9002() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('asu_brand.settings');
+  $config->clear('asu_brand_cookie_consent_enabled');
+  $config->save(TRUE);
+}
+
+/**
+ * Installs dropdown "Column row span" base field storage for menu link content entities.
+ */
+function asu_brand_update_9003() {
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $field_name = 'menu_link_asu_brand_link_dropdown_row_span';
+  $entity_type_id = 'menu_link_content';
+
+  // Skip if field storage already exists.
+  if ($entity_definition_update_manager->getFieldStorageDefinition($field_name, $entity_type_id)) {
+    return;
+  }
+
+  $definition = \Drupal\Core\Field\BaseFieldDefinition::create('integer')
+    ->setLabel('Column row span')
+    ->setDescription('How many columns (max of 5) should appear in this row.')
+    ->setSettings([
+      'min' => 1,
+      'max' => 5,
+    ])
+    ->setSetting('unsigned', TRUE)
+    ->setSetting('size', 'tiny')
+    ->setDefaultValue(1)
+    ->setDisplayOptions('form', ['type' => 'number', 'weight' => 51]);
+
+  $entity_definition_update_manager->installFieldStorageDefinition(
+    $field_name,
+    $entity_type_id,
+    'asu_brand',
+    $definition
+  );
+}
+
+/**
+ * WS2-3126: Add the Unbranded Webspark default setting.
+ */
+function asu_brand_update_10001() {
+  \Drupal::configFactory()->getEditable('asu_brand.settings')
+    ->set('asu_brand.asu_brand_unbranded_enabled', 0)
+    ->save(TRUE);
+}
+
+/**
+ * WS2-3130: Rename partner block settings to the alternate-logo namespace.
+ */
+function asu_brand_update_10002() {
+  $map = [
+    'asu_brand_header_block_partner_enabled' => 'asu_brand_header_block_alternate_logo_enabled',
+    'asu_brand_header_block_partner_url' => 'asu_brand_header_block_alternate_logo_link_url',
+    'asu_brand_header_block_partner_logo_url' => 'asu_brand_header_block_alternate_logo_image_url',
+    'asu_brand_header_block_partner_logo_alt' => 'asu_brand_header_block_alternate_logo_alt',
+  ];
+  $storage = \Drupal::entityTypeManager()->getStorage('block');
+  $renamed = 0;
+  foreach ($storage->loadMultiple() as $block) {
+    if ($block->getPluginId() !== 'asu_brand_header') {
+      continue;
+    }
+    $settings = $block->get('settings');
+    $changed = FALSE;
+    foreach ($map as $old_key => $new_key) {
+      if (array_key_exists($old_key, $settings)) {
+        $settings[$new_key] = $settings[$old_key];
+        unset($settings[$old_key]);
+        $changed = TRUE;
+      }
+    }
+    if ($changed) {
+      $block->set('settings', $settings);
+      $block->save();
+      $renamed++;
+    }
+  }
+  return t('Renamed partner settings keys on @count ASU header block(s).', ['@count' => $renamed]);
+}
+
+/**
+ * Install the default Ocean and Sunset unbranded palettes (idempotent).
+ */
+function asu_brand_update_10003() {
+  $storage = \Drupal::entityTypeManager()->getStorage('asu_brand_palette');
+  $defaults = [
+    'ocean' => [
+      'label' => 'Ocean',
+      'colors' => [
+        'maroon' => ['value' => '#1b3a5b', 'label' => 'Navy'],
+        'gold' => ['value' => '#17a2b8', 'label' => 'Teal'],
+        'dark_maroon' => ['value' => '#10233a', 'label' => 'Deep Navy'],
+        'dark_gold' => ['value' => '#0f6e7e', 'label' => 'Deep Teal'],
+      ],
+    ],
+    'sunset' => [
+      'label' => 'Sunset',
+      'colors' => [
+        'maroon' => ['value' => '#5b2a4a', 'label' => 'Plum'],
+        'gold' => ['value' => '#ff6b4a', 'label' => 'Coral'],
+        'dark_maroon' => ['value' => '#3b1a30', 'label' => 'Deep Plum'],
+        'dark_gold' => ['value' => '#c24a30', 'label' => 'Deep Coral'],
+      ],
+    ],
+  ];
+  $created = [];
+  foreach ($defaults as $id => $values) {
+    // Leave any existing palette (editor-created or from a prior run) untouched.
+    if ($storage->load($id)) {
+      continue;
+    }
+    $storage->create(['id' => $id] + $values)->save();
+    $created[] = $id;
+  }
+  return $created
+    ? t('Created default unbranded palettes: @ids.', ['@ids' => implode(', ', $created)])
+    : t('Default unbranded palettes already present; nothing to create.');
+}
+
+/**
+ * Remove unbranded palette stylesheets built by older generator logic.
+ *
+ * Those files were served until each palette was re-saved (unmapped brand
+ * colors, ASU hover colors, black text on dark buttons). File names are now
+ * content-addressed on the base stylesheet and generator version, so the
+ * active palette's file is regenerated lazily on the next library rebuild;
+ * nothing is written here, which keeps this a no-op on branded sites.
+ */
+function asu_brand_update_10004() {
+  $generator = \Drupal::service('asu_brand.palette_css_generator');
+  $generator->deleteAllFiles();
+  $generator->invalidateCaches();
+  return t('Removed stale unbranded palette stylesheets; the active palette is regenerated on the next page load.');
+}

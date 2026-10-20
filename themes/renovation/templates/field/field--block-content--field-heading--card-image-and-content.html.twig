@@ -1,0 +1,9 @@
+{% for item in items %}
+  <div{{ attributes.addClass(classes) }}>
+    {% include '@renovation/headings/heading.twig' with {
+      html_tag : 'h3',
+      bundle: 'card-image-and-contet',
+      heading: item.content['#context'].value,
+    } %}
+  </div>
+{% endfor %}

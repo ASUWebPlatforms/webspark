@@ -1,0 +1,5 @@
+ckeditor_limit: 30
+ckeditor_window: 300
+automator_cooldown: 300
+automator_user_limit: 20
+automator_user_window: 300
