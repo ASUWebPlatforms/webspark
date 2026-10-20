@@ -1,0 +1,5 @@
+asu_footer.settings:
+  title: 'ASU Footer'
+  description: 'Configure ASU Footer settings'
+  parent: system.admin_config_asu
+  route_name: asu_footer.asu_footer_settings
