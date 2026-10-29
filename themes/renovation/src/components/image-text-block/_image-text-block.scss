@@ -1,0 +1,15 @@
+.block-inline-blockimage-and-text-block {
+  // @see https://asudev.jira.com/browse/WS2-1698
+  .uds-image-text-block-image-container {
+    div {
+      display: flex;
+      flex-direction: column;
+
+      img {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+    }
+  }
+}

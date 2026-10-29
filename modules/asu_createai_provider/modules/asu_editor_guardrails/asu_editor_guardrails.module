@@ -1,0 +1,116 @@
+<?php
+
+/**
+ * @file
+ * Guardrail hooks for ai_ckeditor and ai_automators.
+ */
+
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Allowed HTML tags when re-sanitizing automator output.
+ *
+ * Matches Drupal core's "Restricted HTML" format's tag list.
+ */
+const ASU_EDITOR_GUARDRAILS_ALLOWED_TAGS = [
+  'a', 'b', 'big', 'blockquote', 'br', 'cite', 'code', 'del', 'dl', 'dd',
+  'dt', 'em', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'li', 'ol',
+  'p', 'pre', 'small', 'span', 'strong', 'sub', 'sup', 'table', 'tbody',
+  'td', 'tfoot', 'th', 'thead', 'tr', 'tt', 'ul',
+];
+
+/**
+ * Implements hook_module_implements_alter().
+ *
+ * Forces our entity_presave implementation to run after ai_automators' own,
+ * so it can re-sanitize whatever an automator just wrote to the entity
+ * (for direct/synchronous automators) before the write actually happens.
+ * Automators processed via the queue worker call $entity->save() on a later
+ * request, which re-fires entity_presave fresh, so this also covers that
+ * path without any extra wiring.
+ */
+function asu_editor_guardrails_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'entity_presave' && isset($implementations['asu_editor_guardrails'])) {
+    $group = $implementations['asu_editor_guardrails'];
+    unset($implementations['asu_editor_guardrails']);
+    $implementations['asu_editor_guardrails'] = $group;
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Ai_automators' SimpleTextChat/ComplexTextChat-based rules (used by
+ * llm_simple_text_long, summarize_to_text_long, llm_text_create_summary,
+ * llm_faq_field, llm_chart_from_text, etc.) write raw LLM output straight
+ * into markup-capable fields with no forced safe format. If the field's
+ * configured format is permissive (e.g. Full HTML), a prompt-injected
+ * response containing <script>/onerror handlers renders unescaped to every
+ * site visitor once published. This forces a restrictive format and runs
+ * Xss::filter() as defense in depth on every field that has any ai_automator
+ * attached, regardless of which specific rule wrote to it.
+ */
+function asu_editor_guardrails_entity_presave(EntityInterface $entity) {
+  if (!$entity instanceof ContentEntityInterface) {
+    return;
+  }
+  if (!\Drupal::moduleHandler()->moduleExists('ai_automators')) {
+    return;
+  }
+
+  /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('ai_automator');
+  $ids = $storage->getQuery()
+    ->condition('entity_type', $entity->getEntityTypeId())
+    ->condition('bundle', $entity->bundle())
+    ->accessCheck(FALSE)
+    ->execute();
+
+  if (!$ids) {
+    return;
+  }
+
+  $field_names = [];
+  foreach ($storage->loadMultiple($ids) as $automator) {
+    $field_names[$automator->get('field_name')] = TRUE;
+  }
+
+  $safe_format = _asu_editor_guardrails_safe_format();
+
+  foreach (array_keys($field_names) as $field_name) {
+    if (!$entity->hasField($field_name)) {
+      continue;
+    }
+    foreach ($entity->get($field_name) as $item) {
+      $properties = $item->getDataDefinition()->getPropertyDefinitions();
+      // Only markup-capable fields (those with both a 'value' and a
+      // 'format' property, e.g. text_long/text_with_summary) need this;
+      // plain strings, numbers, entity references, etc. are not at risk.
+      if (!isset($properties['format']) || !isset($properties['value'])) {
+        continue;
+      }
+      if (isset($item->value) && is_string($item->value)) {
+        $item->value = Xss::filter($item->value, ASU_EDITOR_GUARDRAILS_ALLOWED_TAGS);
+      }
+      $item->format = $safe_format;
+    }
+  }
+}
+
+/**
+ * Returns the safe text format to force AI-generated markup into.
+ *
+ * @return string
+ *   The 'restricted_html' format machine name if it exists on this site,
+ *   otherwise 'plain_text' (always available in Drupal core).
+ */
+// phpcs:ignore Drupal.Commenting.DocComment.LongNotCapital
+function _asu_editor_guardrails_safe_format(): string {
+  $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
+  if ($storage->load('restricted_html')) {
+    return 'restricted_html';
+  }
+  return 'plain_text';
+}

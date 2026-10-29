@@ -1,0 +1,5 @@
+name: Webspark Module ASU Breadcrumb
+type: module
+description: Provides breadcrumb for ASU sites.
+package: WebSpark
+core_version_requirement: ^10 || ^11

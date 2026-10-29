@@ -1,0 +1,1347 @@
+/**
+ * @file
+ * Styling for the "ASU sparkles" AI chatbot placement.
+ *
+ * A bespoke upper-right chat widget implementing the v2.71 AI RING CONCEPT
+ * (s16, Sarah 10/9). Scoped to .ai-chatbot-asu-sparkles-block (added by
+ * asu_ai_chatbot_styles_preprocess_block()) so it never affects other
+ * ai_deepchat_block placements on the same page.
+ *
+ * All ASU brand hex values are declared ONCE as module-scoped CSS custom
+ * properties in the token block below — no raw hex outside this block.
+ * Source: ~/web/01DeveloperHandoff/01 Prototype/index.html (AI RING CONCEPT
+ * block, lines 1989-2140).
+ */
+
+/* ---------------------------------------------------------------------------
+ * Houdini @property registrations — enable --gapw interpolation.
+ * Browsers without @property support treat these as plain custom properties
+ * (no interpolation on the morph, but state swap still works).
+ * ------------------------------------------------------------------------- */
+
+@property --asu-sparkles-ang {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 315deg;
+}
+
+@property --asu-sparkles-gapw {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 33deg;
+}
+
+/* ---------------------------------------------------------------------------
+ * Site-overridable tokens declared on :root so a theme can win with
+ * :root { --asu-sparkles-hdr-h: 56px; } without needing to match the
+ * block selector's specificity.
+ *
+ * P1a-formal: --asu-sparkles-hdr-h on :root must default to the DESKTOP
+ * value (123px = ASU UDS/Unity pinned-header height on wide viewports) so
+ * that when JS measurement is skipped or unavailable, the desktop calc()
+ * fallback in .asu-sparkles resolves to 123px + 16px = 139px — not 85px
+ * (which resulted from the prior 69px default defeating the 123px literal
+ * inside the var() fallback argument).  The phone value (69px = UDS narrow
+ * header height) is overridden inside @media (max-width: 900px) below so
+ * the phone fallback stays correct.  The JS-measured inline style always
+ * wins over this :root token regardless of viewport.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --asu-sparkles-hdr-h: 123px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Token block — ALL brand hex values declared here.
+ * These are the only occurrences of raw hex in this file.
+ * Provenance: prototype index.html lines 1989-1991, ASU Unity tokens.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block {
+  /* Existing ASU Unity brand tokens (unchanged). */
+  --asu-sparkles-maroon: #8c1d40;
+  --asu-sparkles-maroon-dark: #440e22;
+  --asu-sparkles-gold: #ffc627;
+
+  /* stylelint-disable-next-line color-hex-length */
+  --asu-sparkles-white: #ffffff;
+  --asu-sparkles-ink: #191919; /* ASU Gray 1 — scrim fill */
+  --asu-sparkles-gray-6: #e8e8e8; /* subtitle color — maps to ASU Gray 6 */
+  --asu-sparkles-gray-5: #d0d0d0;
+  --asu-sparkles-gray-4: #bfbfbf;
+  --asu-sparkles-focus: var(--asu-sparkles-white);
+
+  /* stylelint-disable-next-line value-keyword-case */
+  --asu-sparkles-font: Arial, Helvetica, "Nimbus Sans L", "Liberation Sans", FreeSans, sans-serif;
+
+  /* NEW — full ASU spectrum (not in UDS/Unity tokens; brand-approved hexes).
+     Source: prototype index.html lines 1989-1991. */
+  --asu-sparkles-brand-pink: #e74973;
+  --asu-sparkles-brand-orange: #ff7f32;
+  --asu-sparkles-brand-green: #78be20;
+  --asu-sparkles-brand-turquoise: #4ab7c4;
+  --asu-sparkles-brand-blue: #00a3e0;
+
+  /* NEW — gradient tokens. Source: prototype lines 1989-1991, 2027, 2082. */
+
+  /* Linear spectrum used for accents. */
+  --asu-sparkles-spectrum: linear-gradient(90deg, var(--asu-sparkles-maroon) 0%, var(--asu-sparkles-maroon) 22%, var(--asu-sparkles-brand-pink) 31%, var(--asu-sparkles-brand-orange) 38%, var(--asu-sparkles-gold) 45%, var(--asu-sparkles-gold) 72%, var(--asu-sparkles-brand-green) 80%, var(--asu-sparkles-brand-turquoise) 88%, var(--asu-sparkles-brand-blue) 95%, var(--asu-sparkles-brand-blue) 100%);
+
+  /* Collapsed-state conic — 360° with the ~33° top gap filled by the sparkle.
+     Source: prototype line 2027. */
+  --asu-sparkles-spectrum-ring: conic-gradient(from 200deg, var(--asu-sparkles-maroon) 0deg, var(--asu-sparkles-maroon) 80deg, var(--asu-sparkles-brand-pink) 112deg, var(--asu-sparkles-brand-orange) 138deg, var(--asu-sparkles-gold) 160deg, var(--asu-sparkles-gold) 255deg, var(--asu-sparkles-brand-green) 285deg, var(--asu-sparkles-brand-turquoise) 312deg, var(--asu-sparkles-brand-blue) 338deg, var(--asu-sparkles-maroon) 360deg);
+
+  /* Collapsed-state conic WITH top gap (--gapw). Source: prototype line 2027. */
+  --asu-sparkles-spectrum-ring-gap: conic-gradient(from calc(var(--asu-sparkles-ang) + var(--asu-sparkles-gapw) / 2), var(--asu-sparkles-maroon) 0deg 70deg, var(--asu-sparkles-brand-pink) 100deg, var(--asu-sparkles-brand-orange) 124deg, var(--asu-sparkles-gold) 146deg 240deg, var(--asu-sparkles-brand-green) 268deg, var(--asu-sparkles-brand-turquoise) 292deg, var(--asu-sparkles-brand-blue) 318deg calc(360deg - var(--asu-sparkles-gapw)), transparent calc(360deg - var(--asu-sparkles-gapw)) 360deg);
+
+  /* Open-state mirrored conic — continuous, no maroon→blue seam.
+     Source: prototype line 2082. */
+  --asu-sparkles-spectrum-ring-mirror: conic-gradient(from 0deg, var(--asu-sparkles-maroon) 0deg 40deg, var(--asu-sparkles-brand-pink) 58deg, var(--asu-sparkles-brand-orange) 72deg, var(--asu-sparkles-gold) 88deg 140deg, var(--asu-sparkles-brand-green) 156deg, var(--asu-sparkles-brand-turquoise) 168deg, var(--asu-sparkles-brand-blue) 176deg 184deg, var(--asu-sparkles-brand-turquoise) 192deg, var(--asu-sparkles-brand-green) 204deg, var(--asu-sparkles-gold) 220deg 272deg, var(--asu-sparkles-brand-orange) 288deg, var(--asu-sparkles-brand-pink) 302deg, var(--asu-sparkles-maroon) 320deg 360deg);
+
+  /* NEW — dark glass fill. Source: prototype line 2024. */
+  --asu-sparkles-glass: linear-gradient(171.9deg, rgba(25, 25, 25, 0.2) 48%, rgba(140, 29, 64, 0.2) 90%), linear-gradient(-29.75deg, rgba(25, 25, 25, 0.2) 34%, rgba(140, 29, 64, 0.2) 77%), rgba(25, 25, 25, 0.6);
+
+  /* NEW — ring geometry. */
+  --asu-sparkles-ang: 315deg;
+  --asu-sparkles-gapw: 33deg;
+}
+
+/* ---------------------------------------------------------------------------
+ * Scope + reset.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles *,
+.ai-chatbot-asu-sparkles-block .asu-sparkles *::before,
+.ai-chatbot-asu-sparkles-block .asu-sparkles *::after {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------------
+ * Root element — base styles (shared across all states).
+ * isolation:isolate creates a stacking context so ::before/::after
+ * z-index values are scoped within the widget.
+ * ------------------------------------------------------------------------- */
+
+/* Rev 5 N1 — header-clear top offset. The widget's top is driven by
+ * --asu-sparkles-top on every state and viewport (ring, open, compact).
+ * Default resolves to calc(var(--asu-sparkles-hdr-h, 123px) + 16px)
+ * on desktop (= 139px, clears ASU UDS 123px pinned header + 16px gap).
+ * Themes override --asu-sparkles-hdr-h on :root (preferred — scales
+ * desktop and phone together) or --asu-sparkles-top directly (bypass).
+ * REPLACES the prior hard-coded top: 96px (desktop) and top: 16px
+ * (phone collapsed/compact). */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles {
+  position: fixed;
+  z-index: 1050;
+  top: var(--asu-sparkles-top, calc(var(--asu-sparkles-hdr-h, 123px) + 16px));
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  color: var(--asu-sparkles-white);
+  font-family: var(--asu-sparkles-font);
+  isolation: isolate;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dark glass — ::after pseudo-element, z-index:-1 (behind content).
+ * Source: prototype lines 2024-2025.
+ * Drupal order: position z-index inset content border-radius background.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  border-radius: inherit;
+  background: var(--asu-sparkles-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* ---------------------------------------------------------------------------
+ * Spectrum conic stroke — ::before pseudo-element.
+ * The mask-composite trick makes only the ring border visible:
+ *   - content-box mask: clip to padded area (the ring's stroke width)
+ *   - border-box (exclude): punch out the center
+ * Source: prototype line 2027.
+ * Drupal order: position z-index inset content padding pointer-events border-radius background mask.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  padding: 2px;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--asu-sparkles-spectrum-ring-gap);
+  /* Standard syntax. */
+  -webkit-mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(black 0 0) content-box exclude,
+    linear-gradient(black 0 0);
+}
+
+/* ---------------------------------------------------------------------------
+ * COLLAPSED state — 280px circle with ring gap + sparkle.
+ * Source: prototype lines 2015-2051.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] {
+  --asu-sparkles-gapw: 33deg;
+
+  width: 280px;
+  height: 280px;
+  padding: 24px;
+  border-radius: 50%;
+}
+
+/* ---------------------------------------------------------------------------
+ * OPEN state — 384px rounded panel, continuous mirrored-conic stroke.
+ * Source: prototype lines 2066-2086.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] {
+  --asu-sparkles-gapw: 0deg;
+
+  width: 384px;
+  height: var(--asu-sparkles-open-h, auto);
+  max-height: min(560px, calc(100vh - min(123px, calc(var(--asu-sparkles-hdr-h) + 48px))));
+  border-radius: 20px;
+}
+
+/* Open state: swap to the mirrored conic (no gap). */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"]::before {
+  background: var(--asu-sparkles-spectrum-ring-mirror);
+}
+
+/* ---------------------------------------------------------------------------
+ * COMPACT state — 48px dark-glass circle (the FAB).
+ * Source: prototype lines 2128-2140.
+ * Drupal order: overflow width height background.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] {
+  overflow: visible;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* No glass/stroke on the shell in compact — only the fab has them. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"]::after,
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"]::before {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Orbit — positions the sparkle SVG in the ring gap.
+ * The orbit covers the full 280px circle; the sparkle sits at the top,
+ * and rotates to cancel out --ang so it points straight up.
+ * Source: prototype lines 2029-2031.
+ * Visible ONLY in collapsed state (V6 pair).
+ * Drupal order: position inset display transform border-radius pointer-events.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__orbit {
+  position: absolute;
+  inset: 0;
+  display: none;
+  transform: rotate(var(--asu-sparkles-ang));
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+/* Rev 6.1 — the orbit sparkle (seated in the ring's spectrum-stroke gap)
+   IS shown in the collapsed ring; it is part of the ring motif. Only the
+   header __sparkle (below) is hidden in collapsed per the "no sparkle
+   above Welcome" direction. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__orbit {
+  display: block;
+}
+
+/* Rev 6 R1 — header sparkle hidden in collapsed (above the title in
+   the centered-column intro layout). Stays visible in open where it
+   sits inline beside the h2 title. Compact already hides it (Rev 5).
+   REVERSES the Rev 4 D2 "visible in collapsed + open" to "visible
+   only in open". */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__sparkle {
+  display: none;
+}
+
+/* Drupal order: position top left width height transform color. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__ospark {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%) rotate(calc(-1 * var(--asu-sparkles-ang)));
+  color: var(--asu-sparkles-gold);
+}
+
+/* Rev 5 N4 (REVERSES Rev 4 D3) — all three in-widget sparkle paths
+   render as outlines: gold stroke, no fill. Matches the prototype
+   .ospark { fill:none; stroke:var(--gold); stroke-width:1.6;
+   stroke-linejoin:round; } rule.
+   The template <path> attributes have NO fill attribute so no residual
+   fill directive bleeds through.
+   SELECTOR NOTE: .asu-sparkles__ospark and .asu-sparkles__fab-sparkle ARE
+   the <svg> elements themselves; their paths are direct children, so no
+   intermediate "svg" combinator. .asu-sparkles__sparkle is a <span> wrapper
+   around an <svg>, so that path requires the "svg path" chain. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__ospark path,
+.ai-chatbot-asu-sparkles-block .asu-sparkles__fab-sparkle path,
+.ai-chatbot-asu-sparkles-block .asu-sparkles__sparkle svg path {
+  fill: none;
+  stroke: var(--asu-sparkles-gold);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rev 4 D2 — Header sparkle inside .asu-sparkles__intro.
+ * Visible in collapsed AND open; hidden in compact (shell is display:none).
+ * CSS fill: gold. The <path> has no fill attribute — CSS wins unconditionally.
+ * Drupal order: display flex width height margin pointer-events color.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__sparkle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin: 0 4px 0 0;
+  pointer-events: none;
+  color: var(--asu-sparkles-gold);
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__sparkle svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Centered-column collapsed layout: stack the sparkle above the title. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Open layout: inline sparkle alongside the title. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] .asu-sparkles__intro {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compact: shell is display:none, so sparkle inherits hiding.
+   Keep explicit redundancy for safety: */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__sparkle {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Shell wrapper — the reflow fade target (motion only).
+ * No visual styling; display:contents is avoided for compatibility
+ * (use normal block so opacity transition works).
+ * Drupal order: display flex flex-direction min-height.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Head (greeting area).
+ * In collapsed: centered column layout.
+ * In open: left-aligned row with controls.
+ * Source: prototype lines 2032-2034.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__head {
+  display: flex;
+  align-items: flex-start;
+  padding: 0;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__head {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  /* Iter 11: was 16px — removed so justify-content:center on the shell can
+     produce symmetric vertical centering. The orbit/title/subtitle gap is
+     provided by the shell's existing row-gap (see base shell rule). */
+  padding-top: 0;
+  text-align: center;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] .asu-sparkles__head {
+  justify-content: space-between;
+  padding: 20px 20px 8px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Intro + title + subtitle.
+ * Source: prototype lines 2035-2036, 2056-2057.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__intro {
+  min-width: 0;
+}
+
+/* Drupal order: margin color font-size font-weight line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__title {
+  margin: 0;
+  color: var(--asu-sparkles-white);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+/* Drupal order: margin white-space color font-size line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__subtitle {
+  margin: 2px 0 0;
+  white-space: nowrap;
+  color: var(--asu-sparkles-gray-6);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* Subtitle hidden in open/compact. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] .asu-sparkles__subtitle,
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__subtitle {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Header controls (close / clear).
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__controls {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+/* Drupal order: display place-items width height padding cursor color border border-radius background font-size line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--asu-sparkles-white);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__btn:hover,
+.ai-chatbot-asu-sparkles-block .asu-sparkles__btn:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__btn[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * State machine visibility — head/log/chips/form/shell.
+ * ------------------------------------------------------------------------- */
+
+/* Collapsed: show head + form; hide log (chips are inside the log — V3 pair). */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__log {
+  display: none;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__shell {
+  /* Iter 11: center contents vertically within the 280×280 circle. */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Compact: hide the shell entirely; only fab is visible. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__shell {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Conversation log.
+ * Rev 5 N3: the log is a flex column; .asu-sparkles__chips is the first
+ * child and anchors at the top. Messages append below and the log
+ * autoscrolls to scrollHeight on each new message so the latest reply
+ * is visible. The log is hidden outside the open state (V3 pair).
+ * Source: prototype open-state log flex rules.
+ * Drupal order: display overflow-y flex flex-direction min-height padding scrollbar.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__log {
+  display: none;
+  overflow-y: auto;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px 20px;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-width: thin;
+}
+
+/* Item 1 (Rev 7.1) — the conversation log is focusable (tabindex="-1") so
+   it can receive programmatic focus; clicking it also focuses it and the
+   global Webspark theme paints a blue (#00baff) :focus ring. Override to
+   the widget's white two-tone ring, inset so it stays inside the rounded
+   panel rather than overflowing it. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__log:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 2px var(--asu-sparkles-ink),
+    inset 0 0 0 4px var(--asu-sparkles-white) !important;
+}
+
+/* Open state: show the log. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] .asu-sparkles__log {
+  display: flex;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rev 5 N3 — chips container inside the log (first child).
+ * The log is a column flex; chips row sits at the top as a flex-shrink:0
+ * group that never scrolls away. Real messages append below.
+ * Drupal order: display flex-wrap flex-shrink gap padding.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__log .asu-sparkles__chips {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Messages.
+ * Source: prototype lines 2132-2141.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--user {
+  justify-content: flex-end;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant {
+  justify-content: flex-start;
+}
+
+/* User bubble — thin white-outline pill. Source: prototype line 2132.
+   Drupal order: max-width padding color border border-radius font-size line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--user .asu-sparkles__bubble {
+  max-width: 80%;
+  padding: 7px 14px;
+  color: var(--asu-sparkles-white);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 100px;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* Assistant bubble — borderless white text, 30px left-indent for the sparkle.
+   Source: prototype lines 2132-2141.
+   Drupal order: position max-width padding-left color border background font-size line-height. */
+/* Rev 7 — bubble becomes a flex column so .asu-sparkles__copy can
+   align-self: flex-end below the answer. The ::before sparkle (position:
+   absolute; top: 2px; left: 0;) is layer-independent and continues to
+   anchor to the bubble's top-left regardless of the flex layout.
+   Drupal order: position display flex-direction align-items max-width padding-left color border background font-size line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant .asu-sparkles__bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 100%;
+  padding-left: 30px;
+  color: var(--asu-sparkles-white);
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* White stroked sparkle ::before on assistant answers.
+   Rev 5 N4: stroked two-shape SVG (fill none, stroke white, stroke-width 1.6).
+   Source: prototype line 2066. Two concatenated paths — a four-point sparkle
+   + a smaller companion diamond, both stroked white.
+   Drupal order: position top left content width height background-image background-repeat background-size. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant .asu-sparkles__bubble::before {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  content: "";
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M9 5.5Q9 12.5 16 13Q9 13.5 9 20.5Q9 13.5 2 13Q9 12.5 9 5.5Z'/%3E%3Cpath d='M18 1.5Q18 5 21.5 5Q18 5 18 8.5Q18 5 14.5 5Q18 5 18 1.5Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* Item 3 — drop trailing margin on the last <p> inside a bubble so a
+   single-paragraph answer does not add unwanted vertical padding at the
+   bottom. Scoped to .asu-sparkles__bubble; does not affect .asu-sparkles__intro-msg. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__bubble p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Rev 5 N5 — Intro message (.asu-sparkles__intro-msg).
+ * Rendered by renderIntroMessage() from drupalSettings.ai_deepchat.first_message.
+ * Muted disclaimer-style paragraph, no sparkle. Sits inside .asu-sparkles__log
+ * immediately before .asu-sparkles__chips (Rev 6 R2). NOT a .asu-sparkles__msg--assistant.
+ * Drupal order: margin color font-size line-height.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__intro-msg {
+  margin: 0;
+  color: var(--asu-sparkles-gray-6);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* Defensive: ensure the intro-msg NEVER inherits the assistant sparkle
+   ::before, regardless of any future selector changes. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__intro-msg::before {
+  content: none;
+  background-image: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Timestamps — hidden per prototype.
+ * ------------------------------------------------------------------------- */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__timestamp {
+  display: none;
+}
+
+/* Links in assistant answers. Source: prototype link style rules.
+   Drupal order: white-space text-decoration font-weight color. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant .asu-sparkles__bubble a {
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--asu-sparkles-white);
+  font-weight: 700;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant .asu-sparkles__bubble a::after {
+  content: " \2192";
+}
+
+/* ---------------------------------------------------------------------------
+ * Typing dots — white (not gray). Source: prototype open-state.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__bubble--typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 30px;
+  border: 0;
+  background: transparent;
+}
+
+/* Drupal order: width height animation border-radius background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__bubble--typing span {
+  width: 6px;
+  height: 6px;
+  animation: asu-sparkles-typing 1s infinite;
+  border-radius: 50%;
+  background: var(--asu-sparkles-white);
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__bubble--typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__bubble--typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* ---------------------------------------------------------------------------
+ * Chip appearance — thin white-outline pills.
+ * Source: prototype open-state chip rules.
+ * Location: .asu-sparkles__chips is inside .asu-sparkles__log (Rev 5 N3).
+ * ------------------------------------------------------------------------- */
+
+/* Drupal order: cursor padding transition color border border-radius background font-family font-size line-height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__chip {
+  padding: 6px 14px;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+  color: var(--asu-sparkles-white);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 100px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+/* Rev 5 N6 — chip pointer hover is a SUBTLE lighten (REPLACES Rev 4
+   strong white-fill-with-dark-text). Matches the prototype
+   .chat .chips button:hover { background:rgba(255,255,255,.12); border-color:#fff; }.
+   Text stays WHITE; the Rev 4 D6 two-tone gold :focus-visible ring is
+   preserved for keyboard focus (see .asu-sparkles :focus-visible below). */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__chip:hover {
+  color: var(--asu-sparkles-white);
+  border-color: var(--asu-sparkles-white);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Rev 4 D6 — dark-theme-appropriate focus ring for all interactive
+ * elements inside the widget EXCEPT the input pill (which is covered
+ * by the D5 spectrum thicken on .asu-sparkles__field).
+ *
+ * The global Webspark theme rule sets `outline: none` and a white+ink
+ * box-shadow on :focus (not :focus-visible). This module must win with
+ * a tightly-scoped :focus-visible rule that uses box-shadow (not outline,
+ * since outline is already zeroed by the theme) so the gold ring renders.
+ * !important is required to defeat the specificity of the theme rule.
+ *
+ * Two-tone: white outer (#ffffff) + ink inner separator (#191919).
+ * White on ink is ~21:1 non-text contrast, clearing WCAG 2.1 §1.4.11
+ * (≥3:1) against the dark glass. The ink inner ring separates the white
+ * from both dark and light backdrops. Reference uses #fff (not gold). */
+.ai-chatbot-asu-sparkles-block .asu-sparkles :focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--asu-sparkles-ink),
+    0 0 0 4px var(--asu-sparkles-white) !important;
+}
+
+/* The input pill handles its own focus affordance via D5. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__input:focus-visible {
+  outline: 0;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+ * Input form — pill style.
+ * Source: prototype lines 2007, 2039.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 20px 20px;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__form {
+  justify-content: center;
+  padding: 12px 0 0;
+}
+
+/* Drupal order: position display flex align-items gap width height padding border-radius background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__field {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  width: 246px;
+  height: 40px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 100px;
+  background: rgba(25, 25, 25, 0.35);
+}
+
+/* Rev 4 D5 — pill spectrum stroke. 1px default, 2px on :focus-within.
+   Uses the mask-composite trick to show only the border perimeter of
+   the pill. The spectrum stops that contrast against dark glass
+   dominate the perimeter; the thickening is the focus affordance.
+   Drupal order: position z-index inset content padding pointer-events transition border-radius background mask. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__field::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  padding: 1px;
+  content: "";
+  transition: padding 150ms ease;
+  pointer-events: none;
+  border-radius: 100px;
+  background: var(--asu-sparkles-spectrum);
+  -webkit-mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(black 0 0) content-box exclude,
+    linear-gradient(black 0 0);
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__field:focus-within::before {
+  padding: 2px;
+}
+
+/* The old gold outline on :focus-within is REMOVED — the thickened
+   spectrum stroke is now the focus affordance (Rev 4 D5). */
+
+/* Drupal order: flex min-width height color border background font-family font-size. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  /* Override the Renovation theme's broad
+     `form:not(.uds-form) input:not(...) { padding-left: 2rem }` rule
+     (specificity 0,4,2) so the field's own left inset governs; !important
+     is the minimal, scoped override (mirrors the focus-ring pattern). */
+  padding-left: 0 !important;
+  color: var(--asu-sparkles-white);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* Drupal order: opacity color. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__input::placeholder {
+  opacity: 1;
+  color: var(--asu-sparkles-gray-4);
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__input:focus {
+  outline: 0;
+}
+
+/* Rev 6 R4 — send button REST transparent + Gray 6 border + icon.
+   Prototype parity (.chat-send lines 1316-1317). Rev 5 N7 size (24×24,
+   border-box) preserved. 24×24 CSS px meets WCAG 2.2 §2.5.8 (Target
+   Size — Minimum, Level AA) exactly. §2.5.5 (Level AAA, 44×44)
+   intentionally NOT met — the module's conformance target is AA.
+   The icon uses `fill:none; stroke:currentColor` so color inheritance
+   paints the icon Gray 6 at rest and Ink on hover.
+   Drupal order: display flex place-items width height padding cursor color border border-radius background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__send {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--asu-sparkles-gray-6);
+  border: 1px solid var(--asu-sparkles-gray-6);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__send svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Rev 6 R4 — hover: gold fill + ink icon. Prototype parity.
+   Keyboard :focus-visible (Rev 4 D6 gold ring on ink underlay via
+   .asu-sparkles :focus-visible) still applies and does NOT conflict
+   (outline + box-shadow are orthogonal to background/border/color).
+   Drupal order: color border-color background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__send:hover {
+  color: var(--asu-sparkles-ink);
+  border-color: var(--asu-sparkles-gold);
+  background: var(--asu-sparkles-gold);
+}
+
+/* Rev 6 R4 — transition the rest↔hover visual swap for pointer users;
+   reduced-motion skips the ease. */
+@media (prefers-reduced-motion: no-preference) {
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__send {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Rev 7 — Copy button on assistant answers (.asu-sparkles__copy).
+ *
+ * Rendered client-side by addCopyButton(bubble) and attached as the LAST
+ * child of every finalized .asu-sparkles__msg--assistant .asu-sparkles__bubble
+ * (live final answer and history replay only — never on user, intro-msg,
+ * or typing bubbles). V15 pair.
+ *
+ * Rest: transparent background, Gray 6 border + icon. Mirrors Rev 6 R4
+ * send button rest pattern. 24×24 CSS px hit area (WCAG 2.2 §2.5.8 AA).
+ * Hover: subtle white lighten (mirrors Rev 5 N6 chip hover). NOT gold-fill.
+ * Copied (transient, ~1500ms): gold border + icon.
+ * Focus-visible: Rev 4 D6 gold outline + ink box-shadow ring, inherited
+ * via .asu-sparkles :focus-visible — no new focus-ring code needed.
+ * Drupal order: align-self display flex place-items width height margin-top padding cursor color border border-radius background.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  align-self: flex-end;
+  width: 24px;
+  height: 24px;
+  margin-top: 8px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--asu-sparkles-gray-6);
+  border: 1px solid var(--asu-sparkles-gray-6);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Rev 7 — stroked copy glyph (fill:none; stroke:currentColor;…) so the
+   icon inherits the Gray 6 rest / white hover / gold copied color. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy svg rect,
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy svg path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+/* Rev 7 — hover subtle white lighten (mirrors Rev 5 N6 chip hover).
+   Drupal order: color border-color background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy:hover {
+  color: var(--asu-sparkles-white);
+  border-color: var(--asu-sparkles-white);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Rev 7 — copied state (transient, ~1500ms via .asu-sparkles__copy--copied).
+   Gold border + icon as the "copied" visual cue.
+   Drupal order: color border-color background. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__copy--copied {
+  color: var(--asu-sparkles-gold);
+  border-color: var(--asu-sparkles-gold);
+  background: transparent;
+}
+
+/* Rev 7 — transition the rest↔hover↔copied visual swap; reduced-motion
+   skips the ease (the state swap still occurs; only the animation does not). */
+@media (prefers-reduced-motion: no-preference) {
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__copy {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+}
+
+/* Rev 7 — belt-and-braces: if any contrib `.chat-buttons` markup somehow
+   paints before stripContribButtons() runs (unlikely — the strip is
+   synchronous with the innerHTML assignment), the CSS hides it. This
+   rule MUST NOT fire in practice; it is a visual safety net only. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles .chat-buttons {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+ * FAB — 48px dark-glass circle (compact state, Rev 4).
+ * V4 pair: visible ONLY in compact.
+ * Source: prototype lines 2128-2140.
+ * Drupal order: position top right display place-items width height padding cursor color border border-radius background box-shadow isolation.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles__fab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--asu-sparkles-gold);
+  border: 0;
+  border-radius: 50%;
+  background: rgba(25, 25, 25, 0.72);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  isolation: isolate;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+}
+
+/* 1px spectrum conic stroke on the fab.
+   Drupal order: position z-index inset content padding pointer-events border-radius background mask. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__fab::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  padding: 1px;
+  content: "";
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--asu-sparkles-spectrum-ring);
+  -webkit-mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(black 0 0) content-box exclude,
+    linear-gradient(black 0 0);
+}
+
+/* Drupal order: position z-index width height. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles__fab-sparkle {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+
+/* FAB — 48px dark-glass circle (compact state, Rev 4).
+ * Rev 4: visible ONLY in compact ('closed' state removed). */
+
+/* FAB visible in compact (JS toggles [hidden]; CSS must show it). */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__fab {
+  display: grid;
+}
+
+/* ---------------------------------------------------------------------------
+ * Scrim (§6.5) — opaque Gray 1 backing under the dark glass.
+ * White text on #191919 = 17.3:1 (AAA). Opt-in via data-scrim="1".
+ * The root's background-color sits BEHIND ::after (z-index:-1) so the
+ * glass composites over the opaque ink layer — the desired effect.
+ * ------------------------------------------------------------------------- */
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-scrim="1"] {
+  /* Opaque Gray 1 backing under the dark glass. */
+  background-color: var(--asu-sparkles-ink);
+}
+
+/* Compact state shows only the fab — move scrim to the fab itself. */
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-scrim="1"][data-state="compact"] {
+  background-color: transparent;
+}
+
+.ai-chatbot-asu-sparkles-block .asu-sparkles[data-scrim="1"] .asu-sparkles__fab {
+  background-color: var(--asu-sparkles-ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion — @keyframes (declared globally; used by both morph + crossfade).
+ * ------------------------------------------------------------------------- */
+
+@keyframes asu-sparkles-chatpop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes asu-sparkles-typing {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion block A — Unroll morph (collapsed ↔ open), DESKTOP ONLY.
+ *
+ * The width/height/border-radius morph is gated to min-width:901px because
+ * on phones the ring (232×232) → full-sheet is instant (phones never run
+ * the geometry morph — see §3.10 phone behavior).  Only the shell reflow
+ * fade lives here too, since it is part of the morph.
+ *
+ * Source: prototype line 2064.
+ * ------------------------------------------------------------------------- */
+
+@media (min-width: 901px) {
+  /* A. Unroll morph — root transitions. Source: prototype line 2064.
+   * --asu-sparkles-gapw is the @property-registered custom property in the
+   * transition shorthand. This is valid CSS — custom property names in
+   * transition do not use var(). stylelint custom-property-no-missing-var-function
+   * is disabled for this value only as it cannot distinguish transition
+   * property names from value references. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles {
+    /* stylelint-disable custom-property-no-missing-var-function */
+    transition:
+      width 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+      height 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-radius 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+      --asu-sparkles-gapw 0.42s ease,
+      opacity 0.2s ease;
+    /* stylelint-enable custom-property-no-missing-var-function */
+  }
+
+  /* Shell fades during the morph. Source: prototype lines 2038-2039. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles > .asu-sparkles__shell {
+    transition: opacity 0.2s ease;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles.asu-sparkles--reflow > .asu-sparkles__shell {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion block B — Compaction crossfade + chatpop, ALL WIDTHS.
+ *
+ * Rev 3 §3.10: "Crossfade on phones: identical to desktop. The 48px fab's
+ * chatpop animation plays regardless of viewport."  Only the geometry morph
+ * (unroll) is desktop-only.  The crossfade and chatpop run at every
+ * viewport when prefers-reduced-motion: no-preference.
+ *
+ * Source: prototype lines 1928-1934, 1667-1668.
+ * ------------------------------------------------------------------------- */
+
+/* B. Crossfade fade-out. Source: prototype line 1931.
+   Applies at all widths — compaction crossfade is viewport-independent. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Drupal order: opacity transition. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles.asu-sparkles--fading {
+    transition: opacity 0.12s ease;
+    opacity: 0;
+  }
+
+  /* Chatpop keyframe on the fab when landing on compact. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__fab {
+    animation: asu-sparkles-chatpop 0.2s ease-out;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Responsive — phones ≤900px.
+ *
+ * Rev 3: switches from the old bottom-stuck rule to the prototype's
+ * TOP-RIGHT pinned ring + full-height glass sheet under a notional header.
+ * The prototype uses position:absolute inside a hero container; the module
+ * uses position:fixed so the ring stays anchored to the viewport top-right
+ * regardless of Drupal page structure (documented divergence, §15.3).
+ *
+ * --asu-sparkles-hdr-h defaults to 69px (ASU UDS/Unity pinned-header height
+ * on narrow viewports). Sites can override via :root { --asu-sparkles-hdr-h: 56px }.
+ *
+ * Motion on phones (§3.10): the CROSSFADE (compaction) and chatpop apply at
+ * ALL widths — those rules live outside this block.  The UNROLL MORPH
+ * (collapsed↔open geometry transition) is desktop-only and lives in
+ * @media (min-width: 901px) above.  On phones, collapsed→open is instant
+ * (no width/height transition declared here).
+ *
+ * DELETES the prior @media(max-width:768px) bottom-stuck rule.
+ * Source: prototype lines 2053-2063 and 2089-2092.
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  /* P1a-formal: phone default header height (69px = ASU UDS/Unity narrow
+     viewport pinned header). Overrides the :root 123px desktop default so
+     the collapsed/open/compact top fallbacks resolve correctly on phones
+     when JS measurement is unavailable. The JS-measured inline style still
+     wins over both :root values on any viewport. */
+  :root {
+    --asu-sparkles-hdr-h: 69px;
+  }
+
+  /* Collapsed: top-right pinned ring (232×232).
+     Rev 5 N1: top uses --asu-sparkles-top with 69px phone default
+     (was fixed top: 16px which overlapped mobile site headers).
+     Drupal order: position z-index top right bottom left width height margin padding. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] {
+    position: fixed;
+    z-index: 6;
+    top: var(--asu-sparkles-top, calc(var(--asu-sparkles-hdr-h, 69px) + 16px));
+    right: 16px;
+    bottom: auto;
+    left: auto;
+    width: 232px;
+    height: 232px;
+    margin: 0;
+    padding: 12px;
+  }
+
+  /* Collapsed ring — smaller heading and pill. Source: prototype lines 2056-2062. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__title {
+    font-size: 19px;
+    line-height: 22px;
+  }
+
+  /* Drupal order: max-width font-size line-height. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__subtitle {
+    max-width: 140px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__form {
+    padding-top: 10px;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__field {
+    width: 196px;
+    height: 34px;
+    padding: 0 3px 0 10px;
+    gap: 1px;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__input {
+    font-size: 12px;
+  }
+
+  /* Orbit sparkle smaller on phones. Source: prototype line 2062.
+     §3.4: 38×38 on phones (≤900px). Applied without state-gate so
+     getComputedStyle always resolves to 38px at this viewport. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__ospark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="collapsed"] .asu-sparkles__ospark {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Open state: full-sheet under header. Source: prototype lines 2068-2069, 2089-2092.
+     Rev 5 N1: top uses --asu-sparkles-top (measured by JS; see js/asu-sparkles.js
+     measureHeaderTop). max-height references --asu-sparkles-hdr-h which JS also
+     updates so the constraint stays consistent with the measured header.
+     Drupal order: position z-index top right bottom left width height max-height margin border-radius. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] {
+    position: fixed;
+    z-index: 60;
+    top: var(--asu-sparkles-top, calc(var(--asu-sparkles-hdr-h, 69px) + 16px));
+    right: 8px;
+    bottom: auto;
+    left: 8px;
+    width: auto;
+    height: auto;
+    max-height: calc(100vh - var(--asu-sparkles-hdr-h, 69px) - 16px);
+    margin: 0;
+    border-radius: 20px;
+  }
+
+  /* Drupal order: flex min-height max-height height. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="open"] .asu-sparkles__log {
+    flex: 0 1 auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  /* Compact: 48px fab stays fixed top-right.
+     Rev 5 N1: top uses --asu-sparkles-top so the fab also clears the
+     mobile site header (was fixed top: 16px). */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] {
+    position: fixed;
+    top: var(--asu-sparkles-top, calc(var(--asu-sparkles-hdr-h, 69px) + 16px));
+    right: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion — instant swaps for both motions.
+ * Source: prototype lines 2064, 1935.
+ * ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-chatbot-asu-sparkles-block .asu-sparkles,
+  .ai-chatbot-asu-sparkles-block .asu-sparkles > .asu-sparkles__shell,
+  .ai-chatbot-asu-sparkles-block .asu-sparkles.asu-sparkles--fading {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-state="compact"] .asu-sparkles__fab {
+    animation: none !important;
+  }
+
+  /* Typing dots: no animation. */
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__bubble--typing span {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Forced colors (Windows High Contrast).
+ * Conic-gradient + mask-composite won't render; fall back to CanvasText
+ * borders. Source: §3.9.
+ * ------------------------------------------------------------------------- */
+
+@media (forced-colors: active) {
+  .ai-chatbot-asu-sparkles-block .asu-sparkles {
+    color: CanvasText;
+    border: 2px solid CanvasText;
+    background: Canvas;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles::before,
+  .ai-chatbot-asu-sparkles-block .asu-sparkles::after {
+    display: none;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__fab {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__fab::before {
+    display: none;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles :focus-visible {
+    outline-color: Highlight;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__msg--assistant .asu-sparkles__bubble a {
+    color: LinkText;
+  }
+
+  .ai-chatbot-asu-sparkles-block .asu-sparkles[data-scrim="1"] {
+    background: Canvas;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * @supports fallback — browsers without mask-composite:exclude.
+ * Renders a solid maroon border instead of the conic stroke.
+ * Source: §8 E2.
+ * Drupal order for pseudo-elements: -webkit-mask mask padding border background.
+ * ------------------------------------------------------------------------- */
+
+@supports not (mask-composite: exclude) {
+  .ai-chatbot-asu-sparkles-block .asu-sparkles::before,
+  .ai-chatbot-asu-sparkles-block .asu-sparkles__fab::before {
+    -webkit-mask: none;
+    mask: none;
+    padding: 0;
+    border: 2px solid var(--asu-sparkles-maroon);
+    background: none;
+  }
+}
