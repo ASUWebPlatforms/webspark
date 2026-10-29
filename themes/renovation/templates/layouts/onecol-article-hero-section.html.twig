@@ -1,0 +1,28 @@
+{% if content %}
+  <div{{ attributes.addClass('layout__full-width') }}>
+    {% if content.first %}
+      <div {{ region_attributes.first.addClass('layout__region', 'layout__region--first') }}>
+        <section class="{{ article_hero_image is not empty ? 'uds-story-hero' : 'container' }} {{ article_hero_image is not empty and hero_style is not empty ? 'uds-story-hero-lg entry-header' }}" aria-label="Article hero">
+          {% for key, item in content.first %}
+            {% if loop.first %}
+              {{ item.content }}
+            {% endif %}
+          {% endfor %}
+          <div class="content">
+            {% for key, item in content.first %}
+              {% if not loop.first %}
+                {% if item['#plugin_id'] == 'field_block:node:article:field_article_tags' %}
+                  <div class="article-tags">{{ item.content }}</div>
+                {% elseif item['#plugin_id'] == 'field_block:node:article:field_cta_link' %}
+                  <div class="article-ctas">{{ item.content }}</div>
+                {% else %}
+                  {{ item.content }}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

@@ -1,0 +1,7 @@
+name: 'ASU AI Chatbot Styles'
+type: module
+description: 'Adds bespoke presentation placements to the AI Chatbot (DeepChat) block. Ships the "ASU sparkles" placement: an upper-right chat widget that expands from a sparkle "ring" into a rounded panel, with configurable pre-loaded questions and scroll compaction. Provider-agnostic (works with any drupal/ai chat provider).'
+package: ASU Custom
+core_version_requirement: ^10.4 || ^11
+dependencies:
+  - ai:ai_chatbot

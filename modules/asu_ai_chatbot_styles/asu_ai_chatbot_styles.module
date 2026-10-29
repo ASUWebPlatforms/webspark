@@ -1,0 +1,507 @@
+<?php
+
+/**
+ * @file
+ * Adds bespoke "styles" placements to the AI Chatbot (DeepChat) block.
+ *
+ * This module currently ships a single placement, "ASU sparkles"
+ * (machine name `asu_sparkles`): a bespoke upper-right chat widget that
+ * starts as a small sparkle "ring" ("Welcome! / How can we help you
+ * today?") and expands into a rounded-corner panel when the visitor asks
+ * something. It offers up to five pre-loaded questions and compacts when
+ * the page is scrolled past a configurable element.
+ *
+ * Unlike the chatbot's built-in placements (Toolbar / Bottom right /
+ * Bottom left) and the related asu_ai_chatbot_floating module, the
+ * asu_sparkles placement does NOT render the Deep Chat web component. It
+ * renders its own markup (ai-deepchat--asu-sparkles.html.twig) driven by
+ * its own JavaScript (js/asu-sparkles.js), which talks directly to the
+ * ai_chatbot `/api/deepchat` endpoint. The block still provides the
+ * assistant selection, access checking and drupalSettings plumbing via
+ * \Drupal\ai_chatbot\Plugin\Block\DeepChatFormBlock, so this placement
+ * behaves like any other option in the block's "Styling settings".
+ *
+ * The module depends only on ai:ai_chatbot, so it is provider-agnostic:
+ * it works with any drupal/ai chat provider, not just asu_createai_provider.
+ */
+
+declare(strict_types=1);
+
+use Drupal\block\BlockInterface;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * The plugin ID of the AI Chatbot block this module extends.
+ */
+const ASU_AI_CHATBOT_STYLES_PLUGIN_ID = 'ai_deepchat_block';
+
+/**
+ * The placement machine name added by this module.
+ */
+const ASU_AI_CHATBOT_STYLES_PLACEMENT = 'asu_sparkles';
+
+/**
+ * The style file forced for the asu_sparkles placement.
+ *
+ * The asu_sparkles placement renders its own markup and ignores Deep Chat
+ * styling, but the block config still stores and validates a style file,
+ * so a valid existing value is forced (mirroring how the built-in Toolbar
+ * placement forces module:ai_chatbot:toolbar.yml).
+ */
+const ASU_AI_CHATBOT_STYLES_STYLE_FILE = 'module:ai_chatbot:toolbar.yml';
+
+/**
+ * Maximum number of configurable pre-loaded questions.
+ */
+const ASU_AI_CHATBOT_STYLES_MAX_QUESTIONS = 5;
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers the `ai_deepchat__asu_sparkles` theme hook so the theme
+ * registry finds ai-deepchat--asu-sparkles.html.twig in this module's
+ * templates/ directory. ai_chatbot's
+ * ChatbotHooks::themeSuggestionsAiDeepchatAlter() adds the
+ * `ai_deepchat__<placement>` suggestion whenever a block's `placement`
+ * setting is `asu_sparkles` (it converts "-" to "_"), but modules are only
+ * scanned for templates if they implement hook_theme(), so this
+ * registration is required even though the variables mirror ai_chatbot's
+ * `ai_deepchat` base hook.
+ */
+function asu_ai_chatbot_styles_theme(): array {
+  return [
+    'ai_deepchat__asu_sparkles' => [
+      // Declare this as a suggestion of the ai_chatbot module's base
+      // 'ai_deepchat' hook so the theme registry merges in the base's
+      // preprocess chain (including this module's own
+      // asu_ai_chatbot_styles_preprocess_ai_deepchat()). Without
+      // 'base hook', Drupal treats the suggestion as a standalone
+      // base hook and the base-hook preprocess never runs — which
+      // leaves preset_questions as its hook_theme default [] and the
+      // chips container is never rendered.
+      // @see \Drupal\Core\Theme\Registry::completeSuggestion()
+      'base hook' => 'ai_deepchat',
+      'variables' => [
+        'settings' => [
+          'width' => '100%',
+          'height' => 'auto',
+        ],
+        'deepchat_settings' => [],
+        'current_theme' => '',
+        'preset_questions' => [],
+        'datalayer_section' => 'welcome',
+        'scroll_trigger' => '',
+        'send_typed_text' => FALSE,
+        'scrim' => FALSE,
+        'region_label' => '',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_config_schema_info_alter().
+ *
+ * Adds the asu_sparkles keys to the ai_deepchat_block block settings schema
+ * non-destructively, instead of redefining the whole mapping (which would
+ * risk dropping the chatbot module's own keys). This keeps config export
+ * and typed-config validation happy for the extra settings this module
+ * stores on the block.
+ */
+function asu_ai_chatbot_styles_config_schema_info_alter(array &$definitions): void {
+  $key = 'block.settings.' . ASU_AI_CHATBOT_STYLES_PLUGIN_ID;
+  if (!isset($definitions[$key]['mapping'])) {
+    return;
+  }
+
+  $definitions[$key]['mapping'] += [
+    'asu_sparkles_questions' => [
+      'type' => 'sequence',
+      'label' => 'ASU sparkles pre-loaded questions',
+      'sequence' => [
+        'type' => 'mapping',
+        'mapping' => [
+          'label' => [
+            'type' => 'label',
+            'label' => 'Label',
+          ],
+          'text' => [
+            'type' => 'string',
+            'label' => 'Sent text',
+          ],
+        ],
+      ],
+    ],
+    'asu_sparkles_section' => [
+      'type' => 'string',
+      'label' => 'ASU sparkles data-layer section',
+    ],
+    'asu_sparkles_scroll_trigger' => [
+      'type' => 'string',
+      'label' => 'ASU sparkles scroll-compaction trigger selector',
+    ],
+    'asu_sparkles_send_typed_text' => [
+      'type' => 'boolean',
+      'label' => 'ASU sparkles: send typed query text to the data layer',
+    ],
+    'asu_sparkles_scrim' => [
+      'type' => 'boolean',
+      'label' => 'ASU sparkles: force opaque scrim behind the dark glass',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for the block configuration form.
+ *
+ * Adds the "ASU sparkles" option to the chatbot block's "Placement" select
+ * list and keeps the dependent fields (style/width/height/collapse/
+ * expansion method) in sync with it, the same way the block plugin already
+ * does for "Toolbar" and the asu_ai_chatbot_floating module does for
+ * "Floating".
+ */
+function asu_ai_chatbot_styles_form_block_form_alter(array &$form, FormStateInterface $form_state): void {
+  if (!_asu_ai_chatbot_styles_is_chatbot_block_form($form_state)) {
+    return;
+  }
+
+  if (isset($form['settings']['styling']['placement'])) {
+    $form['settings']['styling']['placement']['#options'][ASU_AI_CHATBOT_STYLES_PLACEMENT] = t('ASU sparkles');
+    $form['settings']['styling']['placement']['#description'] = t('The placement of the chat window. "ASU sparkles" renders a bespoke upper-right widget that expands from a sparkle "ring" into a rounded panel and can offer pre-loaded questions.');
+  }
+
+  // The Deep Chat style/width/height fields are only meaningful for the
+  // bottom-right / bottom-left placements that render the Deep Chat web
+  // component and manage their own sizing. Hide them for "ASU sparkles"
+  // the same way they are already hidden for "Toolbar".
+  foreach (['style_file', 'width', 'height', 'collapse_minimal'] as $field) {
+    if (isset($form['settings']['styling'][$field]['#states']['visible'])) {
+      $form['settings']['styling'][$field]['#states']['visible'] = [
+        [':input[name="settings[styling][placement]"]' => ['value' => 'bottom-right']],
+        [':input[name="settings[styling][placement]"]' => ['value' => 'bottom-left']],
+      ];
+    }
+  }
+
+  // The expansion method (Expand / Full screen) only applies to the
+  // Deep-Chat-based Toolbar placement, not to the bespoke asu_sparkles
+  // widget, so leave its existing (toolbar-only) #states untouched.
+  // Add the asu_sparkles configuration (pre-loaded questions etc.), shown
+  // only when that placement is selected.
+  $entity = $form_state->getBuildInfo()['callback_object']->getEntity();
+  $settings = $entity->get('settings') ?? [];
+  _asu_ai_chatbot_styles_build_settings_form($form, $settings);
+
+  // Persist the custom settings: the contrib block plugin's blockSubmit()
+  // only captures its own known keys, so a dedicated submit handler writes
+  // ours onto the block entity after ::submitForm (which rebuilds the
+  // entity's settings from the plugin configuration) and before ::save.
+  if (isset($form['actions']['submit']['#submit'])) {
+    $handlers = $form['actions']['submit']['#submit'];
+    $position = array_search('::save', $handlers, TRUE);
+    if ($position === FALSE) {
+      $handlers[] = 'asu_ai_chatbot_styles_block_form_submit';
+    }
+    else {
+      array_splice($handlers, $position, 0, ['asu_ai_chatbot_styles_block_form_submit']);
+    }
+    $form['actions']['submit']['#submit'] = $handlers;
+  }
+}
+
+/**
+ * Builds the asu_sparkles settings sub-form.
+ *
+ * @param array $form
+ *   The block configuration form.
+ * @param array $settings
+ *   The current block settings.
+ */
+function _asu_ai_chatbot_styles_build_settings_form(array &$form, array $settings): void {
+  $visible = [
+    ':input[name="settings[styling][placement]"]' => ['value' => ASU_AI_CHATBOT_STYLES_PLACEMENT],
+  ];
+
+  $form['settings']['asu_sparkles'] = [
+    '#type' => 'details',
+    '#title' => t('ASU sparkles settings'),
+    '#open' => FALSE,
+    '#tree' => TRUE,
+    '#states' => ['visible' => $visible],
+  ];
+
+  $form['settings']['asu_sparkles']['questions'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Pre-loaded questions'),
+    '#description' => t('Up to five questions offered as clickable chips. The label is shown on the chip; the sent text is submitted to the assistant when clicked. Rows with an empty sent text are ignored.'),
+    '#tree' => TRUE,
+  ];
+
+  $questions = $settings['asu_sparkles_questions'] ?? [];
+  for ($i = 0; $i < ASU_AI_CHATBOT_STYLES_MAX_QUESTIONS; $i++) {
+    $form['settings']['asu_sparkles']['questions'][$i] = [
+      '#type' => 'container',
+    ];
+    $form['settings']['asu_sparkles']['questions'][$i]['label'] = [
+      '#type' => 'textfield',
+      '#title' => t('Question @number label', ['@number' => $i + 1]),
+      '#default_value' => $questions[$i]['label'] ?? '',
+      '#maxlength' => 80,
+    ];
+    $form['settings']['asu_sparkles']['questions'][$i]['text'] = [
+      '#type' => 'textfield',
+      '#title' => t('Question @number sent text', ['@number' => $i + 1]),
+      '#default_value' => $questions[$i]['text'] ?? '',
+      '#maxlength' => 200,
+    ];
+  }
+
+  $form['settings']['asu_sparkles']['scroll_trigger'] = [
+    '#type' => 'textfield',
+    '#title' => t('Scroll-compaction trigger (CSS selector)'),
+    '#description' => t('Optional. A CSS selector for a page element; when the visitor scrolls past it the idle widget compacts to a slim bar, and expands back when it returns. Leave empty to disable.'),
+    '#default_value' => $settings['asu_sparkles_scroll_trigger'] ?? '',
+    '#maxlength' => 255,
+  ];
+
+  $form['settings']['asu_sparkles']['section'] = [
+    '#type' => 'textfield',
+    '#title' => t('Data-layer section'),
+    '#description' => t('The "section" value sent with ASU Enterprise data-layer events for this widget (lowercase). Defaults to "welcome".'),
+    '#default_value' => $settings['asu_sparkles_section'] ?? '',
+    '#maxlength' => 64,
+  ];
+
+  $form['settings']['asu_sparkles']['send_typed_text'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Send typed query text to the data layer'),
+    '#description' => t('When unchecked (recommended), typed queries are redacted in data-layer events to avoid sending potential PII. Preset-question labels are always sent. Confirm with data governance before enabling.'),
+    '#default_value' => !empty($settings['asu_sparkles_send_typed_text']),
+  ];
+
+  $form['settings']['asu_sparkles']['scrim'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Force opaque backing (scrim)'),
+    '#description' => t('When checked, places an opaque Gray 1 (#191919) backing under the translucent dark glass so white text and controls hold WCAG 2.1 AA contrast on any page background. Leave off (default) to preserve the designer-approved translucent look — recommended only when the widget sits over a dark backdrop. Confirm with design before enabling.'),
+    '#default_value' => !empty($settings['asu_sparkles_scrim']),
+  ];
+}
+
+/**
+ * Submit handler that persists asu_sparkles settings onto the block entity.
+ *
+ * @param array $form
+ *   The form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function asu_ai_chatbot_styles_block_form_submit(array &$form, FormStateInterface $form_state): void {
+  $entity = $form_state->getFormObject()->getEntity();
+  if (!$entity instanceof BlockInterface || $entity->getPluginId() !== ASU_AI_CHATBOT_STYLES_PLUGIN_ID) {
+    return;
+  }
+
+  // Base the settings on the LIVE block plugin configuration, not on
+  // $entity->get('settings'): the contrib plugin's blockSubmit() has already
+  // run (this handler is spliced in after ::submitForm) and updated the
+  // plugin collection with the newly chosen placement, but the entity's
+  // stored `settings` property is not synced from that collection until the
+  // entity is saved. Reading the stale property and writing it back would
+  // reset the plugin collection and revert the just-chosen placement.
+  $plugin = $entity->getPlugin();
+  $settings = $plugin->getConfiguration();
+  $values = (array) $form_state->getValue(['settings', 'asu_sparkles'], []);
+
+  $questions = [];
+  foreach ((array) ($values['questions'] ?? []) as $row) {
+    $text = trim((string) ($row['text'] ?? ''));
+    if ($text === '') {
+      continue;
+    }
+    $label = trim((string) ($row['label'] ?? ''));
+    $questions[] = [
+      'label' => $label !== '' ? $label : $text,
+      'text' => $text,
+    ];
+  }
+  $settings['asu_sparkles_questions'] = $questions;
+  $settings['asu_sparkles_scroll_trigger'] = trim((string) ($values['scroll_trigger'] ?? ''));
+  $settings['asu_sparkles_section'] = mb_strtolower(trim((string) ($values['section'] ?? '')));
+  $settings['asu_sparkles_send_typed_text'] = (bool) ($values['send_typed_text'] ?? FALSE);
+  $settings['asu_sparkles_scrim'] = (bool) ($values['scrim'] ?? FALSE);
+
+  $plugin->setConfiguration($settings);
+  $entity->set('settings', $settings);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for the block config entity.
+ *
+ * Forces the style file and width/height for the asu_sparkles placement,
+ * mirroring what DeepChatFormBlock::blockSubmit() does for "Toolbar": the
+ * asu_sparkles widget sizes itself through its own CSS, so the Deep Chat
+ * sizing fields (which may carry stale values from another placement) are
+ * normalised to safe, schema-valid defaults.
+ */
+function asu_ai_chatbot_styles_block_presave(BlockInterface $block): void {
+  if ($block->getPluginId() !== ASU_AI_CHATBOT_STYLES_PLUGIN_ID) {
+    return;
+  }
+
+  $settings = $block->get('settings');
+  if (($settings['placement'] ?? NULL) !== ASU_AI_CHATBOT_STYLES_PLACEMENT) {
+    return;
+  }
+
+  $settings['style_file'] = ASU_AI_CHATBOT_STYLES_STYLE_FILE;
+  $settings['width'] = '100%';
+  $settings['height'] = 'auto';
+  $block->set('settings', $settings);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for block templates.
+ *
+ * Adds a class to the block wrapper so this module's CSS/JS can target
+ * only chatbot blocks configured with the asu_sparkles placement, without
+ * touching (or being affected by) the generic `.block-ai-deepchat-block`
+ * selectors the chatbot module and the other placements use.
+ */
+function asu_ai_chatbot_styles_preprocess_block(array &$variables): void {
+  if (($variables['plugin_id'] ?? NULL) !== ASU_AI_CHATBOT_STYLES_PLUGIN_ID) {
+    return;
+  }
+
+  if (($variables['configuration']['placement'] ?? NULL) !== ASU_AI_CHATBOT_STYLES_PLACEMENT) {
+    return;
+  }
+
+  $variables['attributes']['class'][] = 'ai-chatbot-asu-sparkles-block';
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for ai_deepchat templates.
+ *
+ * Maps the block's stored asu_sparkles_* settings onto the clean template
+ * variables declared by the ai_deepchat__asu_sparkles theme hook. Runs for
+ * the base ai_deepchat hook (which the asu_sparkles suggestion extends) and
+ * only acts on the asu_sparkles placement.
+ */
+function asu_ai_chatbot_styles_preprocess_ai_deepchat(array &$variables): void {
+  if (($variables['settings']['placement'] ?? NULL) !== ASU_AI_CHATBOT_STYLES_PLACEMENT) {
+    return;
+  }
+
+  $settings = $variables['settings'];
+
+  $questions = [];
+  foreach ((array) ($settings['asu_sparkles_questions'] ?? []) as $question) {
+    $text = trim((string) ($question['text'] ?? ''));
+    if ($text === '') {
+      continue;
+    }
+    $label = trim((string) ($question['label'] ?? ''));
+    $questions[] = [
+      'label' => $label !== '' ? $label : $text,
+      'text' => $text,
+    ];
+  }
+
+  $variables['preset_questions'] = $questions;
+  $variables['datalayer_section'] = trim((string) ($settings['asu_sparkles_section'] ?? '')) ?: 'welcome';
+  $variables['scroll_trigger'] = trim((string) ($settings['asu_sparkles_scroll_trigger'] ?? ''));
+  $variables['send_typed_text'] = !empty($settings['asu_sparkles_send_typed_text']);
+  $variables['scrim'] = !empty($settings['asu_sparkles_scrim']);
+
+  $region_label = trim((string) ($settings['label'] ?? ''));
+  $variables['region_label'] = $region_label !== '' ? $region_label : t('ASU chat assistant');
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches the early "restoring" script directly to the page (header
+ * region), the same way ai_chatbot does for its Toolbar placement and
+ * asu_ai_chatbot_floating does for Floating: the block can arrive in a
+ * late BigPipe chunk after the first paint, so attaching through it would
+ * defer the script past the paint it needs to run before.
+ */
+function asu_ai_chatbot_styles_page_attachments(array &$attachments): void {
+  $cacheability = new CacheableMetadata();
+  $block = _asu_ai_chatbot_styles_get_sparkles_block($cacheability);
+  $cacheability->applyTo($attachments);
+
+  if ($block === NULL) {
+    return;
+  }
+
+  $attachments['#attached']['library'][] = 'asu_ai_chatbot_styles/asu-sparkles-early';
+}
+
+/**
+ * Finds the first accessible asu_sparkles-placed chatbot block, if any.
+ *
+ * @param \Drupal\Core\Cache\CacheableMetadata $cacheability
+ *   Accumulates every cacheable condition the decision was based on.
+ *
+ * @return \Drupal\block\BlockInterface|null
+ *   The sparkles chatbot block, or NULL if none applies.
+ */
+function _asu_ai_chatbot_styles_get_sparkles_block(CacheableMetadata $cacheability): ?BlockInterface {
+  $cacheability->addCacheContexts(['theme', 'user.permissions']);
+
+  if (!\Drupal::currentUser()->hasPermission('access deepchat api')) {
+    return NULL;
+  }
+
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  try {
+    $cacheability->addCacheTags($entity_type_manager->getDefinition('block')->getListCacheTags());
+    $theme = \Drupal::theme()->getActiveTheme()->getName();
+    $blocks = $entity_type_manager->getStorage('block')->loadByProperties([
+      'theme' => $theme,
+      'plugin' => ASU_AI_CHATBOT_STYLES_PLUGIN_ID,
+      'status' => TRUE,
+    ]);
+
+    foreach ($blocks as $block) {
+      /** @var \Drupal\block\BlockInterface $block */
+      $cacheability->addCacheableDependency($block);
+      $settings = $block->get('settings');
+      if (($settings['placement'] ?? '') !== ASU_AI_CHATBOT_STYLES_PLACEMENT) {
+        continue;
+      }
+      $access = $block->access('view', NULL, TRUE);
+      $cacheability->addCacheableDependency($access);
+      if ($access->isAllowed()) {
+        return $block;
+      }
+    }
+  }
+  catch (\Exception $e) {
+    // Fail gracefully if block storage is unavailable.
+    return NULL;
+  }
+
+  return NULL;
+}
+
+/**
+ * Determines whether the given form state is the chatbot block's config form.
+ *
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ *
+ * @return bool
+ *   TRUE if this is an ai_deepchat_block configuration form.
+ */
+function _asu_ai_chatbot_styles_is_chatbot_block_form(FormStateInterface $form_state): bool {
+  $build_info = $form_state->getBuildInfo();
+  $callback_object = $build_info['callback_object'] ?? NULL;
+  if (!$callback_object || !method_exists($callback_object, 'getEntity')) {
+    return FALSE;
+  }
+  return $callback_object->getEntity()->getPluginId() === ASU_AI_CHATBOT_STYLES_PLUGIN_ID;
+}

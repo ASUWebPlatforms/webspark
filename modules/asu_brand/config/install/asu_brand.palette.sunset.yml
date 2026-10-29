@@ -1,0 +1,20 @@
+# Default unbranded palette. NOTE: provisional demo colors — replace with the
+# brand/KE-approved values before release.
+langcode: en
+status: true
+dependencies: {  }
+id: sunset
+label: Sunset
+colors:
+  maroon:
+    value: '#5b2a4a'
+    label: Plum
+  gold:
+    value: '#ff6b4a'
+    label: Coral
+  dark_maroon:
+    value: '#3b1a30'
+    label: 'Deep Plum'
+  dark_gold:
+    value: '#c24a30'
+    label: 'Deep Coral'

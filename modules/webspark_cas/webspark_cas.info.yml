@@ -1,0 +1,7 @@
+name: WebSpark CAS
+type: module
+description: Webspark module with CAS overrides for ASU scenarios.
+package: WebSpark
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:cas

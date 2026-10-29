@@ -1,0 +1,28 @@
+asu-sparkles:
+  css:
+    theme:
+      css/asu-sparkles.css: {}
+  js:
+    js/asu-sparkles.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - asu_ai_chatbot_styles/dompurify
+    - core/drupalSettings
+
+asu-sparkles-early:
+  header: true
+  js:
+    js/asu-sparkles-early.js: {}
+
+# Rev 10 — local DOMPurify library. Path mirrors contrib blazy (blazy.libraries.yml:17-25).
+# The /libraries/* remapping is proven on this site by blazy's declaration of the same path.
+dompurify:
+  remote: https://github.com/cure53/DOMPurify
+  version: 2.20.3
+  license:
+    name: MPL
+    url: https://raw.githubusercontent.com/cure53/DOMPurify/main/LICENSE
+    gpl-compatible: false
+  js:
+    /libraries/dompurify/dist/purify.min.js: { minified: true, weight: -16 }

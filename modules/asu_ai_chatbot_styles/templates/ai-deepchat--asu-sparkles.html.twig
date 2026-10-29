@@ -1,0 +1,122 @@
+{#
+/**
+ * @file
+ * "ASU sparkles" placement for the AI Chatbot DeepChat block.
+ *
+ * A bespoke upper-right chat widget. It does NOT render the Deep Chat web
+ * component; its own JavaScript (js/asu-sparkles.js) drives the state
+ * machine and talks to the ai_chatbot /api/deepchat endpoint. The block
+ * (\Drupal\ai_chatbot\Plugin\Block\DeepChatFormBlock) still supplies the
+ * assistant selection, access and drupalSettings.ai_deepchat.* values.
+ *
+ * States are carried on the root element's data-state attribute:
+ * collapsed | open | compact (see css/asu-sparkles.css and
+ * js/asu-sparkles.js).
+ *
+ * Available variables:
+ * - settings: The block configuration settings.
+ * - current_theme: The active theme name, prefixed with "chatbot-".
+ * - preset_questions: List of { label, text } pre-loaded questions.
+ * - datalayer_section: The data-layer "section" value.
+ * - scroll_trigger: CSS selector that drives scroll compaction.
+ * - send_typed_text: Whether typed query text may be sent to the data layer.
+ * - scrim: Whether to force an opaque backing (data-scrim="0|1").
+ */
+#}
+{{ attach_library('asu_ai_chatbot_styles/asu-sparkles') }}
+
+{% set title = 'Welcome!'|t %}
+{% set subtitle = 'How can we help you today?'|t %}
+{% set placeholder = 'Ask anything about ASU'|t %}
+
+<div{{ create_attribute({
+  'class': [current_theme, 'ai-deepchat', 'asu-sparkles'],
+  'data-chat-id': 'bot1',
+  'data-state': 'collapsed',
+  'data-datalayer-section': datalayer_section|default('welcome'),
+  'data-scroll-trigger': scroll_trigger|default(''),
+  'data-send-typed-text': send_typed_text ? '1' : '0',
+  'data-scrim': scrim ? '1' : '0',
+  'role': 'region',
+  'aria-label': region_label,
+}) }}>
+
+  {# Collapsed-state ring sparkle — seats the gold sparkle in the stroke's
+     top gap. position:absolute inset:0 inside the ring; the inner SVG sits
+     at the top of the orbit circle. aria-hidden — purely decorative. #}
+  <span class="asu-sparkles__orbit" aria-hidden="true">
+    <svg class="asu-sparkles__ospark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+      <path d="M24.17 6.36 28.39 4.73 29.94.59Q30.75 0 30.75.59L33.12 4.73 37.26 6.36Q37.85 7.1 37.26 7.91L33.12 9.46 31.49 13.68Q30.75 14.19 29.94 13.68L28.39 9.46 24.17 7.91Q23.66 7.1 24.17 6.36ZM14.05 4.73Q14.49 4.73 15.15 5.47L15.75 6.73 16.04 7.39 18.99 13.90 25.58 16.93 26.17 17.22 27.43 17.82Q28.17 17.96 28.17 18.85Q28.17 19.74 27.43 19.96L26.17 20.48 25.58 20.77 18.99 23.80 15.97 30.31V30.38L15.67 30.97 15.15 32.23Q14.49 32.97 14.05 32.97Q13.60 32.97 13.01 32.23L12.42 30.97 12.12 30.38V30.31L9.09 23.80 2.59 20.77H2.51L1.92 20.48.67 19.96Q0 19.74 0 18.85Q0 18.41.67 17.74L1.92 17.22 2.51 16.93H2.59L9.09 13.90 12.12 7.32 12.42 6.73 13.01 5.47Q13.60 4.73 14.05 4.73ZM30.75 23.66Q31.05 23.66 31.49 24.25L33.12 28.39 37.26 30.01Q37.85 30.46 37.85 30.75Q37.85 31.12 37.26 31.57L33.12 33.12 31.49 37.33Q31.05 37.85 30.75 37.85Q30.38 37.85 29.94 37.33L28.39 33.12 24.17 31.57Q23.66 31.12 23.66 30.75Q23.66 30.46 24.17 30.01L28.39 28.39 29.94 24.25Q30.01 23.66 30.75 23.66Z"/>
+    </svg>
+  </span>
+
+  {# Shell wrapper — gives the unroll-motion's reflow fade a single selector.
+     No role, no aria, no tabindex. Purely a motion-scaffolding container. #}
+  <div class="asu-sparkles__shell">
+
+    {# Collapsed "ring": sparkle, greeting and subtitle. #}
+    <div class="asu-sparkles__head">
+      <div class="asu-sparkles__intro">
+        <span class="asu-sparkles__sparkle" aria-hidden="true">
+          <svg viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+            <path d="M24.17 6.36 28.39 4.73 29.94.59Q30.75 0 30.75.59L33.12 4.73 37.26 6.36Q37.85 7.1 37.26 7.91L33.12 9.46 31.49 13.68Q30.75 14.19 29.94 13.68L28.39 9.46 24.17 7.91Q23.66 7.1 24.17 6.36ZM14.05 4.73Q14.49 4.73 15.15 5.47L15.75 6.73 16.04 7.39 18.99 13.90 25.58 16.93 26.17 17.22 27.43 17.82Q28.17 17.96 28.17 18.85Q28.17 19.74 27.43 19.96L26.17 20.48 25.58 20.77 18.99 23.80 15.97 30.31V30.38L15.67 30.97 15.15 32.23Q14.49 32.97 14.05 32.97Q13.60 32.97 13.01 32.23L12.42 30.97 12.12 30.38V30.31L9.09 23.80 2.59 20.77H2.51L1.92 20.48.67 19.96Q0 19.74 0 18.85Q0 18.41.67 17.74L1.92 17.22 2.51 16.93H2.59L9.09 13.90 12.12 7.32 12.42 6.73 13.01 5.47Q13.60 4.73 14.05 4.73ZM30.75 23.66Q31.05 23.66 31.49 24.25L33.12 28.39 37.26 30.01Q37.85 30.46 37.85 30.75Q37.85 31.12 37.26 31.57L33.12 33.12 31.49 37.33Q31.05 37.85 30.75 37.85Q30.38 37.85 29.94 37.33L28.39 33.12 24.17 31.57Q23.66 31.12 23.66 30.75Q23.66 30.46 24.17 30.01L28.39 28.39 29.94 24.25Q30.01 23.66 30.75 23.66Z"/>
+          </svg>
+        </span>
+        <h2 class="asu-sparkles__title">{{ title }}</h2>
+        <p class="asu-sparkles__subtitle">{{ subtitle }}</p>
+      </div>
+      <div class="asu-sparkles__controls">
+        <button type="button" class="asu-sparkles__btn asu-sparkles__clear" aria-label="{{ 'Clear the conversation'|t }}" title="{{ 'Clear the conversation'|t }}" hidden>
+          <span aria-hidden="true">&#x21bb;</span>
+        </button>
+        <button type="button" class="asu-sparkles__btn asu-sparkles__close" aria-label="{{ 'Close the chat'|t }}" hidden>
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+
+    {# Conversation log (shown once expanded). Rev 5 N3: the preset-question
+       chips container is the FIRST child of the log so chips anchor at the
+       top and real messages append below. #}
+    <div class="asu-sparkles__log" role="log" aria-label="{{ 'Conversation'|t }}" aria-live="polite" tabindex="-1">
+
+      {# Pre-loaded question chips. Server-rendered from preset_questions
+         (set by asu_ai_chatbot_styles_preprocess_ai_deepchat). Lives INSIDE
+         the log as its first child (Rev 5 N3); only visible when the log is
+         visible (open state) — no additional state rule needed. JS wires click
+         handlers on .asu-sparkles__chip to populate the input (Rev 5 N2). #}
+      {% if preset_questions is not empty %}
+        <div class="asu-sparkles__chips" role="group" aria-label="{{ 'Suggested questions'|t }}">
+          {% for question in preset_questions %}
+            <button type="button" class="asu-sparkles__chip" data-question-text="{{ question.text }}">{{ question.label }}</button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# Input: up-arrow (enter) submit only, no microphone. #}
+    <form class="asu-sparkles__form" autocomplete="off">
+      <label class="visually-hidden" for="asu-sparkles-input">{{ placeholder }}</label>
+      <div class="asu-sparkles__field">
+        <input id="asu-sparkles-input" class="asu-sparkles__input" type="text" name="asu_sparkles_query" placeholder="{{ placeholder }}" maxlength="200" enterkeyhint="send" autocomplete="off">
+        <button type="submit" class="asu-sparkles__send" aria-label="{{ 'Send'|t }}">
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <path d="M10 16V5M10 5 5 10M10 5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+  </div>{# end .asu-sparkles__shell #}
+
+  {# Floating button: the 48px dark-glass circle shown in compact state. #}
+  <button type="button" class="asu-sparkles__fab" aria-label="{{ 'Open the ASU chat'|t }}" hidden>
+    <svg class="asu-sparkles__fab-sparkle" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+      <path d="M24.17 6.36 28.39 4.73 29.94.59Q30.75 0 30.75.59L33.12 4.73 37.26 6.36Q37.85 7.1 37.26 7.91L33.12 9.46 31.49 13.68Q30.75 14.19 29.94 13.68L28.39 9.46 24.17 7.91Q23.66 7.1 24.17 6.36ZM14.05 4.73Q14.49 4.73 15.15 5.47L15.75 6.73 16.04 7.39 18.99 13.90 25.58 16.93 26.17 17.22 27.43 17.82Q28.17 17.96 28.17 18.85Q28.17 19.74 27.43 19.96L26.17 20.48 25.58 20.77 18.99 23.80 15.97 30.31V30.38L15.67 30.97 15.15 32.23Q14.49 32.97 14.05 32.97Q13.60 32.97 13.01 32.23L12.42 30.97 12.12 30.38V30.31L9.09 23.80 2.59 20.77H2.51L1.92 20.48.67 19.96Q0 19.74 0 18.85Q0 18.41.67 17.74L1.92 17.22 2.51 16.93H2.59L9.09 13.90 12.12 7.32 12.42 6.73 13.01 5.47Q13.60 4.73 14.05 4.73ZM30.75 23.66Q31.05 23.66 31.49 24.25L33.12 28.39 37.26 30.01Q37.85 30.46 37.85 30.75Q37.85 31.12 37.26 31.57L33.12 33.12 31.49 37.33Q31.05 37.85 30.75 37.85Q30.38 37.85 29.94 37.33L28.39 33.12 24.17 31.57Q23.66 31.12 23.66 30.75Q23.66 30.46 24.17 30.01L28.39 28.39 29.94 24.25Q30.01 23.66 30.75 23.66Z"/>
+    </svg>
+  </button>
+
+  {# Screen-reader status announcements. #}
+  <p class="asu-sparkles__live visually-hidden" aria-live="polite"></p>
+</div>

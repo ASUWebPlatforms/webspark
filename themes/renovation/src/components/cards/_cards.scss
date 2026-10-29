@@ -1,0 +1,37 @@
+// TODO: Move this to UDS
+.uds-card-and-image {
+  i.fa-null {
+    display: none;
+  }
+}
+
+.uds-card-arrangement {
+  &-card-container {
+    .card-wrapper {
+      .card {
+        .card-icon-top {
+          margin: 24px 2rem 0 2rem;
+        }
+
+        &:not(:has(.card-header)) {
+          padding-top: 24px;
+
+          &:has(.card-icon-top) {
+            padding-top: 0;
+          }
+        }
+
+      }
+
+      .card-degree {
+        padding-top: 0 !important;
+
+        &:not(:has(.card-header)) {
+          .card-body {
+            padding-top: 24px;
+          }
+        }
+      }
+    }
+  }
+}
