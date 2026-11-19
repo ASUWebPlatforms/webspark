@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_anchor_url_fragment
+    - paragraphs.paragraphs_type.anchor_menu_settings
+  enforced:
+    module:
+      - webspark_blocks
+id: paragraph.anchor_menu_settings.field_anchor_url_fragment
+field_name: field_anchor_url_fragment
+entity_type: paragraph
+bundle: anchor_menu_settings
+label: 'Anchor URL fragment'
+description: 'Enter a short, stable URL fragment using lowercase letters, numbers, and hyphens. Do not include #. Changing this value preserves the previous link as an alias.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

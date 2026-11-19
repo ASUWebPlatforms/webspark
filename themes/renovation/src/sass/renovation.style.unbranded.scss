@@ -1,0 +1,75 @@
+// ----------------------------------------------------------------------------
+// WS2-2964 — unbranded SENTINEL base build.
+// UDS color tokens carry `!default` (UDS-2239), so the tokens are simply
+// pre-defined before importing the standard entry files; derived variables
+// ($uds-color-brand-*, $uds-color-font-light-link, etc.) recompute upstream.
+//
+// These are NOT a real palette: they are unique placeholder values that
+// asu_brand's PaletteCssGenerator replaces with the site's active palette
+// (config entities at /admin/config/asu_brand/palettes) to produce the served
+// stylesheet. This base file is never served raw — if you ever see magenta /
+// green, no palette is active. Keep these values in sync with
+// PaletteCssGenerator::SENTINELS.
+//
+// Each sentinel has roughly the same luminance as the ASU color it stands in
+// for (maroon/darkmaroon/darkgold dark, gold light). Bootstrap makes
+// compile-time decisions from luminance — color-contrast() picks the button
+// text color, and button-variant() picks tint vs shade for hover/active — so
+// matching luminance makes the base bake the same decisions as the branded
+// build (e.g. white text on maroon buttons). The generator then remaps every
+// tint/shade/mix of a sentinel with white and black to the same mix of the
+// palette color. For that to be unambiguous no sentinel may be a tint/shade
+// of another (each has a zero channel, and no two are proportional).
+// ----------------------------------------------------------------------------
+
+$uds-color-base-gold: #00ffc1;
+$uds-color-base-maroon: #8c008b;
+$uds-color-base-darkgold: #5a6e00;
+$uds-color-base-darkmaroon: #4a0028;
+
+@import "../../node_modules/@asu/unity-bootstrap-theme/src/scss/unity-bootstrap-theme";
+@import "../../node_modules/@asu/unity-bootstrap-theme/src/scss/unity-bootstrap-footer";
+
+// ----------------------------------------------------------------------------
+// Renovation
+// ----------------------------------------------------------------------------
+
+@import "base";
+@import "helpers";
+@import "nodes";
+@import "pages";
+@import "components";
+
+// ----------------------------------------------------------------------------
+// React component styles with hardcoded ASU colors.
+// The UDS React bundles (asu_react_core, webspark_webdir, asu_news,
+// asu_events) inject CSS-in-JS with literal #8c1d40 / #ffc627, which never
+// pass through this build. Re-point them at the sentinel tokens; !important
+// is required because the injected styles are appended after this sheet.
+// ----------------------------------------------------------------------------
+
+// Image gallery carousel: active thumbnail outline.
+.glide.image-gallery .image-navigator .image-navigator-images .navigation-slider .glide__bullets .glide__bullet--active {
+  border-color: $uds-color-base-gold !important;
+}
+
+// Highlight (news/events body copy).
+.highlight-gold {
+  background: $uds-color-base-gold !important;
+  box-shadow: -0.15em 0 0 $uds-color-base-gold, 0.15em 0 0 $uds-color-base-gold !important;
+}
+
+// Web directory: "Filter By Last Initial" choices and grid contact icons.
+.choices-container .choice {
+  color: $uds-color-base-maroon !important;
+
+  &.selected,
+  &[aria-checked="true"] {
+    background-color: $uds-color-base-maroon !important;
+    color: $white !important;
+  }
+}
+
+.uds-grid-profile ul.person-contact-info [class*="fa-"] {
+  color: $uds-color-base-maroon !important;
+}

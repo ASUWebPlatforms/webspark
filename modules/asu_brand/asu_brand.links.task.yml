@@ -1,0 +1,11 @@
+# Local task tabs tying the ASU Brand settings form and the palette list
+# together: both pages show "Settings" and "Unbranded palettes" tabs.
+asu_brand.asu_brand_settings:
+  title: 'Settings'
+  route_name: asu_brand.asu_brand_settings
+  base_route: asu_brand.asu_brand_settings
+
+entity.asu_brand_palette.collection:
+  title: 'Unbranded palettes'
+  route_name: entity.asu_brand_palette.collection
+  base_route: asu_brand.asu_brand_settings

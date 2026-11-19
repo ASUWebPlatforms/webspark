@@ -1,0 +1,14 @@
+asu_brand.asu_brand_settings:
+  path: '/admin/config/asu_brand/settings'
+  defaults:
+    _form: '\Drupal\asu_brand\Form\AsuBrandSettingsForm'
+    _title: 'ASU Brand settings'
+  requirements:
+    _permission: 'administer site configuration'
+entity.asu_brand_palette.collection:
+  path: '/admin/config/asu_brand/palettes'
+  defaults:
+    _entity_list: 'asu_brand_palette'
+    _title: 'Unbranded palettes'
+  requirements:
+    _permission: 'use unbranded webspark'

@@ -1,0 +1,33 @@
+asu_brand.palette.*:
+  type: config_entity
+  label: 'Unbranded palette'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Palette name'
+    colors:
+      type: mapping
+      label: 'Colors'
+      mapping:
+        maroon:
+          type: asu_brand.palette_color
+        gold:
+          type: asu_brand.palette_color
+        dark_maroon:
+          type: asu_brand.palette_color
+        dark_gold:
+          type: asu_brand.palette_color
+
+asu_brand.palette_color:
+  type: mapping
+  label: 'Palette color'
+  mapping:
+    value:
+      type: string
+      label: 'Hex value'
+    label:
+      type: label
+      label: 'Editor label'

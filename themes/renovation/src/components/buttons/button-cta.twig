@@ -1,0 +1,15 @@
+{% if url is not empty %}
+  <a
+    href="{{ url }}"
+    class="btn btn-sm {{ button_color }}"
+    target="{{ target }}"
+    data-ga-event="link"
+    data-ga-action="click"
+    data-ga-name="onclick"
+    data-ga-type="internal link"
+    data-ga-section="{{ sub_heading is empty ? heading : sub_heading }}"
+    data-ga-region="main content"
+    data-ga-text="{{ title }}">
+    {{ title }}
+  </a>
+{% endif %}

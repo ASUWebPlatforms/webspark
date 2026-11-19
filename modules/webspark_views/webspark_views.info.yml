@@ -1,0 +1,8 @@
+name: Webspark Views
+type: module
+description: Provides a view format that is a card collection
+package: WebSpark
+core_version_requirement: ^9 || ^10 || ^11
+dependencies:
+  - drupal:views
+  - drupal:filter

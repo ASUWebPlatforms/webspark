@@ -1,0 +1,21 @@
+// Add CSS to adjust the Anchor Menu position on Degree Detail pages.
+// See: https://asudev.jira.com/browse/WS2-1151
+body {
+  // When logged out
+  article.degree-detail-page--full .uds-anchor-menu {
+    top: 116px !important;
+  }
+
+  // When logged in
+  &.toolbar-vertical {
+    article.degree-detail-page--full .uds-anchor-menu {
+      top: 160px !important;
+    }
+  }
+
+  &.toolbar-horizontal {
+    article.degree-detail-page--full .uds-anchor-menu {
+      top: 160px !important;
+    }
+  }
+}

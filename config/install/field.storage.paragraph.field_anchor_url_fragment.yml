@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+  enforced:
+    module:
+      - webspark_blocks
+id: paragraph.field_anchor_url_fragment
+field_name: field_anchor_url_fragment
+entity_type: paragraph
+type: string
+settings:
+  max_length: 64
+  case_sensitive: true
+  is_ascii: true
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

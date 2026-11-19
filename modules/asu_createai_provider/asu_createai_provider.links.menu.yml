@@ -1,0 +1,5 @@
+asu_createai_provider.settings_menu:
+  title: 'CreateAI Authentication'
+  description: 'Setup CreateAI (ASU AIML).'
+  route_name: asu_createai_provider.settings_form
+  parent: ai.admin_providers

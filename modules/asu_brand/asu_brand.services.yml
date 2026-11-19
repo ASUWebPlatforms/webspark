@@ -1,0 +1,12 @@
+services:
+  asu_brand.helper_functions:
+    class: Drupal\asu_brand\AsuBrandHelperFunctions
+  asu_brand.palette_css_generator:
+    class: Drupal\asu_brand\PaletteCssGenerator
+    arguments:
+      - '@config.factory'
+      - '@entity_type.manager'
+      - '@file_system'
+      - '@extension.list.theme'
+      - '@file_url_generator'
+      - '@logger.channel.default'

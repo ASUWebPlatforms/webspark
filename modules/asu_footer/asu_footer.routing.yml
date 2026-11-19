@@ -1,0 +1,7 @@
+asu_footer.asu_footer_settings:
+  path: '/admin/config/asu/footer'
+  defaults:
+    _form: '\Drupal\asu_footer\Form\AsuFooterSettingsForm'
+    _title: 'ASU Footer Settings'
+  requirements:
+    _permission: 'administer site configuration'
