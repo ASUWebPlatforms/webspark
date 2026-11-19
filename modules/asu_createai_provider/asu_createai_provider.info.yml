@@ -1,0 +1,10 @@
+name: CreateAI Provider
+description: Provides a CreateAI (ASU AIML) chat provider for the AI module, using CreateAI's OpenAI-compatible API.
+package: AI Providers
+type: module
+core_version_requirement: ^10.3 || ^11
+configure: asu_createai_provider.settings_form
+
+dependencies:
+  - ai:ai
+  - key:key

@@ -1,0 +1,162 @@
+{#
+/**
+ * @file
+ * "ASU sparkles" placement for the AI Chatbot DeepChat block.
+ *
+ * A bespoke upper-right chat widget. It does NOT render the Deep Chat web
+ * component; its own JavaScript (js/asu-sparkles.js) drives the state
+ * machine and talks to the ai_chatbot /api/deepchat endpoint. The block
+ * (\Drupal\ai_chatbot\Plugin\Block\DeepChatFormBlock) still supplies the
+ * assistant selection, access and drupalSettings.ai_deepchat.* values.
+ *
+ * States are carried on the root element's data-state attribute:
+ * collapsed | open | compact (see css/asu-sparkles.css and
+ * js/asu-sparkles.js).
+ *
+ * Available variables:
+ * - settings: The block configuration settings.
+ * - current_theme: The active theme name, prefixed with "chatbot-".
+ * - preset_questions: List of { label, text } pre-loaded questions.
+ * - datalayer_section: The data-layer "section" value.
+ * - scroll_trigger: CSS selector that drives scroll compaction.
+ * - send_typed_text: Whether typed query text may be sent to the data layer.
+ * - scrim: Whether to force an opaque backing (data-scrim="0|1").
+ */
+#}
+{{ attach_library('asu_ai_chatbot_styles/asu-sparkles') }}
+
+{% set title = 'Welcome!'|t %}
+{% set placeholder = 'Ask anything about ASU'|t %}
+
+<div{{ create_attribute({
+  'class': [current_theme, 'ai-deepchat', 'asu-sparkles'],
+  'data-chat-id': 'bot1',
+  'data-state': 'collapsed',
+  'data-datalayer-section': datalayer_section|default('welcome'),
+  'data-scroll-trigger': scroll_trigger|default(''),
+  'data-send-typed-text': send_typed_text ? '1' : '0',
+  'data-scrim': scrim ? '1' : '0',
+  'role': 'region',
+  'aria-label': region_label,
+}) }}>
+
+  {# Collapsed-state ring sparkle — seats the gold sparkle in the stroke's
+     top gap. position:absolute inset:0 inside the ring; the inner SVG sits
+     at the top of the orbit circle. aria-hidden — purely decorative. #}
+  <span class="asu-sparkles__orbit" aria-hidden="true">
+    <svg class="asu-sparkles__ospark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+      <path d="M24.1732 6.35661L28.3869 4.73027L29.9393 0.590514C30.0132 0.220892 30.3829 -0.000880241 30.7525 -0.000880241C31.0482 -0.000880241 31.4178 0.220892 31.4917 0.590514L33.1181 4.73027L37.2578 6.35661C37.6274 6.43053 37.8492 6.80015 37.8492 7.09585C37.8492 7.46547 37.6274 7.83509 37.2578 7.90902L33.1181 9.46142L31.4917 13.6751C31.4178 13.9708 31.0482 14.1926 30.7525 14.1926C30.3829 14.1926 30.0132 13.9708 29.9393 13.6751L28.3869 9.46142L24.1732 7.90902C23.8775 7.83509 23.6558 7.46547 23.6558 7.09585C23.6558 6.80015 23.8775 6.43053 24.1732 6.35661ZM0.665318 17.7409L1.92203 17.2235L2.51342 16.9278H2.58735L9.09268 13.8969L12.1236 7.31762L12.4193 6.72623L13.0107 5.46951C13.1585 5.02597 13.6021 4.73027 14.0456 4.73027C14.4892 4.73027 14.9327 5.02597 15.1545 5.46951L15.7459 6.72623L15.9676 7.31762L16.0416 7.39155L18.9985 13.8969L25.5778 16.9278L26.1692 17.2235L27.4259 17.8149C27.8694 17.9627 28.1651 18.4063 28.1651 18.8498C28.1651 19.2934 27.8694 19.7369 27.4259 19.9587L26.1692 20.4761L25.5778 20.7718L18.9985 23.8027L15.9676 30.3081V30.382L15.6719 30.9734L15.1545 32.2301C14.9327 32.6736 14.4892 32.9693 14.0456 32.9693C13.6021 32.9693 13.1585 32.6736 13.0107 32.2301L12.4193 30.9734L12.1236 30.382V30.3081L9.09268 23.8027L2.58735 20.7718H2.51342L1.92203 20.4761L0.665318 19.9587C0.221773 19.7369 0 19.2934 0 18.8498C0 18.4063 0.221773 17.9627 0.665318 17.7409ZM6.80103 18.8498L10.5712 20.624C11.3104 20.9197 11.9757 21.585 12.3454 22.3242L14.0456 26.0944L15.8198 22.3242C16.1894 21.585 16.7808 20.9197 17.5201 20.624L21.2902 18.8498L17.5201 17.0756C16.7808 16.7799 16.1894 16.1146 15.8198 15.3754L14.0456 11.6052L12.3454 15.3754C11.9757 16.1146 11.3104 16.7799 10.5712 17.0756L6.80103 18.8498ZM28.3869 28.386L29.9393 24.2463C30.0132 23.8767 30.3829 23.6549 30.7525 23.6549C31.0482 23.6549 31.4178 23.8767 31.4917 24.2463L33.1181 28.386L37.2578 30.0124C37.6274 30.0863 37.8492 30.4559 37.8492 30.7516C37.8492 31.1212 37.6274 31.4909 37.2578 31.5648L33.1181 33.1172L31.4917 37.3309C31.4178 37.6266 31.0482 37.8483 30.7525 37.8483C30.3829 37.8483 30.0132 37.6266 29.9393 37.3309L28.3869 33.1172L24.1732 31.5648C23.8775 31.4909 23.6558 31.1212 23.6558 30.7516C23.6558 30.4559 23.8775 30.0863 24.1732 30.0124L28.3869 28.386Z"/>
+    </svg>
+  </span>
+
+  {# Shell wrapper — gives the unroll-motion's reflow fade a single selector.
+     No role, no aria, no tabindex. Purely a motion-scaffolding container. #}
+  <div class="asu-sparkles__shell">
+
+    {# Collapsed "ring": sparkle, greeting and subtitle. #}
+    <div class="asu-sparkles__head">
+      <div class="asu-sparkles__intro">
+        <span class="asu-sparkles__sparkle" aria-hidden="true">
+          <svg viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+            <path d="M24.1732 6.35661L28.3869 4.73027L29.9393 0.590514C30.0132 0.220892 30.3829 -0.000880241 30.7525 -0.000880241C31.0482 -0.000880241 31.4178 0.220892 31.4917 0.590514L33.1181 4.73027L37.2578 6.35661C37.6274 6.43053 37.8492 6.80015 37.8492 7.09585C37.8492 7.46547 37.6274 7.83509 37.2578 7.90902L33.1181 9.46142L31.4917 13.6751C31.4178 13.9708 31.0482 14.1926 30.7525 14.1926C30.3829 14.1926 30.0132 13.9708 29.9393 13.6751L28.3869 9.46142L24.1732 7.90902C23.8775 7.83509 23.6558 7.46547 23.6558 7.09585C23.6558 6.80015 23.8775 6.43053 24.1732 6.35661ZM0.665318 17.7409L1.92203 17.2235L2.51342 16.9278H2.58735L9.09268 13.8969L12.1236 7.31762L12.4193 6.72623L13.0107 5.46951C13.1585 5.02597 13.6021 4.73027 14.0456 4.73027C14.4892 4.73027 14.9327 5.02597 15.1545 5.46951L15.7459 6.72623L15.9676 7.31762L16.0416 7.39155L18.9985 13.8969L25.5778 16.9278L26.1692 17.2235L27.4259 17.8149C27.8694 17.9627 28.1651 18.4063 28.1651 18.8498C28.1651 19.2934 27.8694 19.7369 27.4259 19.9587L26.1692 20.4761L25.5778 20.7718L18.9985 23.8027L15.9676 30.3081V30.382L15.6719 30.9734L15.1545 32.2301C14.9327 32.6736 14.4892 32.9693 14.0456 32.9693C13.6021 32.9693 13.1585 32.6736 13.0107 32.2301L12.4193 30.9734L12.1236 30.382V30.3081L9.09268 23.8027L2.58735 20.7718H2.51342L1.92203 20.4761L0.665318 19.9587C0.221773 19.7369 0 19.2934 0 18.8498C0 18.4063 0.221773 17.9627 0.665318 17.7409ZM6.80103 18.8498L10.5712 20.624C11.3104 20.9197 11.9757 21.585 12.3454 22.3242L14.0456 26.0944L15.8198 22.3242C16.1894 21.585 16.7808 20.9197 17.5201 20.624L21.2902 18.8498L17.5201 17.0756C16.7808 16.7799 16.1894 16.1146 15.8198 15.3754L14.0456 11.6052L12.3454 15.3754C11.9757 16.1146 11.3104 16.7799 10.5712 17.0756L6.80103 18.8498ZM28.3869 28.386L29.9393 24.2463C30.0132 23.8767 30.3829 23.6549 30.7525 23.6549C31.0482 23.6549 31.4178 23.8767 31.4917 24.2463L33.1181 28.386L37.2578 30.0124C37.6274 30.0863 37.8492 30.4559 37.8492 30.7516C37.8492 31.1212 37.6274 31.4909 37.2578 31.5648L33.1181 33.1172L31.4917 37.3309C31.4178 37.6266 31.0482 37.8483 30.7525 37.8483C30.3829 37.8483 30.0132 37.6266 29.9393 37.3309L28.3869 33.1172L24.1732 31.5648C23.8775 31.4909 23.6558 31.1212 23.6558 30.7516C23.6558 30.4559 23.8775 30.0863 24.1732 30.0124L28.3869 28.386Z"/>
+          </svg>
+        </span>
+        {# Text column: title and first_message line stacked
+           left-aligned, with the sparkle vertically centered beside them.
+           .asu-sparkles__intro-text is the right column in the open-state flex row
+           and stacks the two text elements (column layout). The collapsed ring keeps
+           its centered-column layout via CSS state rules on .asu-sparkles__intro. #}
+        <div class="asu-sparkles__intro-text">
+          <h2 class="asu-sparkles__title">{{ title }}</h2>
+          {# First_message slot. JS writes the configured first_message here on
+             init; hidden by default (JS shows/hides). The subtitle/firstmsg element is
+             reused for the collapsed ring subtitle and the open-state second line. #}
+          <p class="asu-sparkles__subtitle" hidden aria-live="off"></p>
+        </div>
+      </div>
+      <div class="asu-sparkles__controls">
+        <button type="button"
+                class="asu-sparkles__btn asu-sparkles__menu"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-controls="{{ menu_popover_id }}"
+                aria-label="{{ 'Chat options'|t }}"
+                title="{{ 'Chat options'|t }}"
+                hidden>
+          <span class="fa-solid fa-ellipsis" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="asu-sparkles__btn asu-sparkles__close" aria-label="{{ 'Close the chat'|t }}" hidden>
+          <span class="fa-solid fa-xmark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    {# Ellipsis menu popover — role=menu, anchored under the header controls.
+       Always renders; when no links are configured only the Clear action is
+       shown. Visibility controlled by JS (openMenu/closeMenu).
+       Per spec: no new-tab attribute on links (internal or external).
+       rel="external noopener" on external links only (security defence-in-depth). #}
+    <div id="{{ menu_popover_id }}"
+         class="asu-sparkles__menu-popover"
+         role="menu"
+         aria-label="{{ 'Chat options'|t }}"
+         hidden>
+      <button type="button"
+              class="asu-sparkles__menu-item asu-sparkles__menu-item--clear"
+              role="menuitem"
+              data-action="clear">
+        {{ 'Clear conversation'|t }}
+      </button>
+      {% for link in menu_links %}
+        <a class="asu-sparkles__menu-item asu-sparkles__menu-item--link"
+           role="menuitem"
+           href="{{ link.href }}"
+           {% if link.external %}rel="external noopener"{% endif %}>{{ link.label }}</a>
+      {% endfor %}
+    </div>
+
+    {# Conversation log (shown once expanded). The preset-question
+       chips container is the FIRST child of the log so chips anchor at the
+       top and real messages append below. #}
+    <div class="asu-sparkles__log" role="log" aria-label="{{ 'Conversation'|t }}" aria-live="polite" tabindex="-1">
+
+      {# Pre-loaded question chips. Server-rendered from preset_questions
+         (set by asu_ai_chatbot_styles_preprocess_ai_deepchat). Lives INSIDE
+         the log as its first child (chips-first invariant); only visible when the log is
+         visible (open state) — no additional state rule needed. JS wires click
+         handlers on .asu-sparkles__chip to populate the input. #}
+      {% if preset_questions is not empty %}
+        <div class="asu-sparkles__chips" role="group" aria-label="{{ 'Suggested questions'|t }}">
+          {% for question in preset_questions %}
+            <button type="button" class="asu-sparkles__chip" data-question-text="{{ question.text }}">{{ question.label }}</button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# Input: up-arrow (enter) submit only, no microphone. #}
+    <form class="asu-sparkles__form" autocomplete="off">
+      <label class="visually-hidden" for="asu-sparkles-input">{{ placeholder }}</label>
+      <div class="asu-sparkles__field">
+        <input id="asu-sparkles-input" class="asu-sparkles__input" type="text" name="asu_sparkles_query" placeholder="{{ placeholder }}" maxlength="200" enterkeyhint="send" autocomplete="off">
+        <button type="submit" class="asu-sparkles__send" aria-label="{{ 'Send'|t }}">
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <path d="M10 16V5M10 5 5 10M10 5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+  </div>{# end .asu-sparkles__shell #}
+
+  {# Floating button: the 48px dark-glass circle shown in compact state. #}
+  <button type="button" class="asu-sparkles__fab" aria-label="{{ 'Open the ASU chat'|t }}" hidden>
+    <svg class="asu-sparkles__fab-sparkle" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+      <path d="M24.1732 6.35661L28.3869 4.73027L29.9393 0.590514C30.0132 0.220892 30.3829 -0.000880241 30.7525 -0.000880241C31.0482 -0.000880241 31.4178 0.220892 31.4917 0.590514L33.1181 4.73027L37.2578 6.35661C37.6274 6.43053 37.8492 6.80015 37.8492 7.09585C37.8492 7.46547 37.6274 7.83509 37.2578 7.90902L33.1181 9.46142L31.4917 13.6751C31.4178 13.9708 31.0482 14.1926 30.7525 14.1926C30.3829 14.1926 30.0132 13.9708 29.9393 13.6751L28.3869 9.46142L24.1732 7.90902C23.8775 7.83509 23.6558 7.46547 23.6558 7.09585C23.6558 6.80015 23.8775 6.43053 24.1732 6.35661ZM0.665318 17.7409L1.92203 17.2235L2.51342 16.9278H2.58735L9.09268 13.8969L12.1236 7.31762L12.4193 6.72623L13.0107 5.46951C13.1585 5.02597 13.6021 4.73027 14.0456 4.73027C14.4892 4.73027 14.9327 5.02597 15.1545 5.46951L15.7459 6.72623L15.9676 7.31762L16.0416 7.39155L18.9985 13.8969L25.5778 16.9278L26.1692 17.2235L27.4259 17.8149C27.8694 17.9627 28.1651 18.4063 28.1651 18.8498C28.1651 19.2934 27.8694 19.7369 27.4259 19.9587L26.1692 20.4761L25.5778 20.7718L18.9985 23.8027L15.9676 30.3081V30.382L15.6719 30.9734L15.1545 32.2301C14.9327 32.6736 14.4892 32.9693 14.0456 32.9693C13.6021 32.9693 13.1585 32.6736 13.0107 32.2301L12.4193 30.9734L12.1236 30.382V30.3081L9.09268 23.8027L2.58735 20.7718H2.51342L1.92203 20.4761L0.665318 19.9587C0.221773 19.7369 0 19.2934 0 18.8498C0 18.4063 0.221773 17.9627 0.665318 17.7409ZM6.80103 18.8498L10.5712 20.624C11.3104 20.9197 11.9757 21.585 12.3454 22.3242L14.0456 26.0944L15.8198 22.3242C16.1894 21.585 16.7808 20.9197 17.5201 20.624L21.2902 18.8498L17.5201 17.0756C16.7808 16.7799 16.1894 16.1146 15.8198 15.3754L14.0456 11.6052L12.3454 15.3754C11.9757 16.1146 11.3104 16.7799 10.5712 17.0756L6.80103 18.8498ZM28.3869 28.386L29.9393 24.2463C30.0132 23.8767 30.3829 23.6549 30.7525 23.6549C31.0482 23.6549 31.4178 23.8767 31.4917 24.2463L33.1181 28.386L37.2578 30.0124C37.6274 30.0863 37.8492 30.4559 37.8492 30.7516C37.8492 31.1212 37.6274 31.4909 37.2578 31.5648L33.1181 33.1172L31.4917 37.3309C31.4178 37.6266 31.0482 37.8483 30.7525 37.8483C30.3829 37.8483 30.0132 37.6266 29.9393 37.3309L28.3869 33.1172L24.1732 31.5648C23.8775 31.4909 23.6558 31.1212 23.6558 30.7516C23.6558 30.4559 23.8775 30.0863 24.1732 30.0124L28.3869 28.386Z"/>
+    </svg>
+  </button>
+
+  {# Screen-reader status announcements. #}
+  <p class="asu-sparkles__live visually-hidden" aria-live="polite"></p>
+</div>

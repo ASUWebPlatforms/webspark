@@ -1,0 +1,10 @@
+name: ASU Agents Guardrails
+description: Audit logging and flood control for ai_agents' write-capable tools (Taxonomy, Content Type, and Field agents), which ship with no rate limiting or audit trail of their own.
+# TODO: unify with asu_createai_provider's "AI Providers" package so they group together on /admin/modules.
+package: AI Tools
+type: module
+core_version_requirement: ^10.4 || ^11
+configure: asu_agents_guardrails.settings_form
+
+dependencies:
+  - ai_agents:ai_agents

@@ -1,0 +1,20 @@
+# Default unbranded palette. NOTE: provisional demo colors — replace with the
+# brand/KE-approved values before release.
+langcode: en
+status: true
+dependencies: {  }
+id: ocean
+label: Ocean
+colors:
+  maroon:
+    value: '#1b3a5b'
+    label: Navy
+  gold:
+    value: '#17a2b8'
+    label: Teal
+  dark_maroon:
+    value: '#10233a'
+    label: 'Deep Navy'
+  dark_gold:
+    value: '#0f6e7e'
+    label: 'Deep Teal'

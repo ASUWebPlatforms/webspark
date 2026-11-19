@@ -1,0 +1,12 @@
+{{ attach_library('renovation/renovation.chartjs') }}
+{{ attach_library('renovation/charts_graphs') }}
+
+<div class="uds-charts-and-graphs-container" data-number="{{ number }}">
+  <div class="uds-charts-and-graphs-overlay {{ text_color }}">
+    <p>
+      <span id="percentage-display">{{ number }}%</span>
+      <span>{{ text }}</span>
+    </p>
+  </div>
+  <canvas id="uds-donut"></canvas>
+</div>

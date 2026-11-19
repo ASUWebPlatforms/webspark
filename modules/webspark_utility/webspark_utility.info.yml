@@ -1,0 +1,9 @@
+name: WebsSpark Utility
+description: Contains Utility Functionality
+package: WebSpark
+
+type: module
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:config
+  - drupal:config_update

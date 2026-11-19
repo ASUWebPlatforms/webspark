@@ -1,0 +1,10 @@
+{% if paragraph.field_title.value %}
+  {% for alias_id in anchor_alias_ids %}
+    <div class="webspark-anchor-link-alias" id="{{ alias_id }}" aria-hidden="true"></div>
+  {% endfor %}
+  <div class="webspark-anchor-link-data"
+       id="{{ anchor_target_id }}"
+       data-title="{{ paragraph.field_title.value }}">
+  </div>
+  <div class="anchor-link-icon d-none">{{ content.field_icon }}</div>
+{% endif %}

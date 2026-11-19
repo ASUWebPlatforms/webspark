@@ -1,0 +1,5 @@
+entity.asu_brand_palette.add_form:
+  route_name: entity.asu_brand_palette.add_form
+  title: 'Add palette'
+  appears_on:
+    - entity.asu_brand_palette.collection

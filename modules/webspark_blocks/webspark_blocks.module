@@ -1,0 +1,315 @@
+<?php
+
+use Drupal\block_content\BlockContentInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\image\Entity\ImageStyle;
+use Drupal\paragraphs\ParagraphInterface;
+use Drupal\webspark_blocks\Plugin\Validation\Constraint\AnchorUrlFragment;
+
+function webspark_blocks_theme_suggestions_block_alter(array &$suggestions, array $variables) {
+
+  // Block suggestions for custom block bundles.
+  if (isset($variables['elements']['content']['#block_content'])
+    && $variables['elements']['content']['#block_content'] instanceof BlockContentInterface) {
+    $bundle = $variables['elements']['content']['#block_content']->bundle();
+    $view_mode = strtr($variables['elements']['#configuration']['view_mode'], '.', '_');
+    $suggestions[] = 'block__' . $bundle;
+    $suggestions[] = 'block__' . $bundle . '__' . $view_mode;
+    $suggestions[] = 'block__inline_block__' . $bundle;
+  }
+}
+
+function webspark_blocks_form_block_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['settings']['label']['#title'] = t('Block admin title');
+}
+
+/**
+ * Implements hook_entity_bundle_field_info_alter().
+ */
+function webspark_blocks_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
+  if ($entity_type->id() === 'paragraph' && $bundle === 'anchor_menu_settings' && isset($fields['field_anchor_url_fragment'])) {
+    $fields['field_anchor_url_fragment']->addConstraint('AnchorUrlFragment', []);
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function webspark_blocks_entity_presave($entity) {
+  if (!$entity instanceof ParagraphInterface
+    || $entity->bundle() !== 'anchor_menu_settings'
+    || $entity->isNew()
+    || !$entity->hasField('field_anchor_url_fragment')
+    || !$entity->hasField('field_anchor_url_aliases')) {
+    return;
+  }
+
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraph');
+  $latest_revision_id = $paragraph_storage->getLatestRevisionId($entity->id());
+  $latest_revision = $latest_revision_id ? $paragraph_storage->loadRevision($latest_revision_id) : NULL;
+  if (!$latest_revision instanceof ParagraphInterface
+    || !$latest_revision->hasField('field_anchor_url_fragment')
+    || !$latest_revision->hasField('field_anchor_url_aliases')) {
+    return;
+  }
+
+  $current_fragment = $entity->get('field_anchor_url_fragment')->value ?? '';
+  $aliases = AnchorUrlFragment::mergeHistory(
+    $current_fragment,
+    $latest_revision->get('field_anchor_url_fragment')->value ?? '',
+    array_column($entity->get('field_anchor_url_aliases')->getValue(), 'value'),
+    array_column($latest_revision->get('field_anchor_url_aliases')->getValue(), 'value')
+  );
+  $entity->set('field_anchor_url_aliases', array_map(static function ($alias) {
+    return ['value' => $alias];
+  }, $aliases));
+}
+
+/**
+ * Implements hook_preprocess_paragraph().
+ */
+function webspark_blocks_preprocess_paragraph(array &$variables) {
+  $paragraph = $variables['paragraph'];
+  if ($paragraph->bundle() !== 'anchor_menu_settings') {
+    return;
+  }
+  $paragraph_id = $paragraph->id();
+  $legacy_id = 'webspark-anchor-link--' . $paragraph_id;
+  $fragment = $paragraph->hasField('field_anchor_url_fragment') ? ($paragraph->get('field_anchor_url_fragment')->value ?? '') : '';
+  $valid_fragment = AnchorUrlFragment::isValid($fragment);
+
+  if ($fragment !== '' && !$valid_fragment) {
+    $cache = \Drupal::cache('default');
+    $cache_id = 'webspark_blocks.invalid_anchor_fragment.' . $paragraph_id;
+    if (!$cache->get($cache_id)) {
+      \Drupal::logger('webspark_blocks')->warning('Paragraph @id has an invalid Anchor URL fragment; rendering the legacy anchor ID.', [
+        '@id' => $paragraph_id,
+      ]);
+      $cache->set($cache_id, TRUE, time() + 86400);
+    }
+  }
+
+  $variables['anchor_target_id'] = $valid_fragment ? $fragment . '--' . $paragraph_id : $legacy_id;
+  $variables['anchor_alias_ids'] = [];
+  if ($valid_fragment) {
+    $variables['anchor_alias_ids'][] = $legacy_id;
+  }
+
+  $alias_items = $paragraph->hasField('field_anchor_url_aliases') ? $paragraph->get('field_anchor_url_aliases')->getValue() : [];
+  foreach ($alias_items as $item) {
+    $alias = $item['value'] ?? '';
+    if (AnchorUrlFragment::isValid($alias) && $alias !== $fragment) {
+      $variables['anchor_alias_ids'][] = $alias . '--' . $paragraph_id;
+    }
+  }
+  $variables['anchor_alias_ids'] = array_values(array_unique($variables['anchor_alias_ids']));
+}
+
+function webspark_blocks_form_layout_builder_add_block_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // WS2-1279 - Placing default value of false for new blocks only
+  $form['settings']['label_display']['#default_value'] = FALSE;
+  $form['settings']['label']['#title'] = t('Block admin title');
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function webspark_blocks_page_attachments(array &$attachments) {
+  $attachments['#attached']['library'][] = 'webspark_blocks/webspark_blocks';
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function webspark_blocks_preprocess_input__submit(&$variables) {
+  $variables['attributes']['class'][] = 'btn-maroon';
+}
+
+function webspark_blocks_theme($existing, $type, $theme, $path){
+  return [
+    'webspark_blocks__back-to-top' => [],
+    'webspark_blocks_anchor_menu' => [
+      'variables' => [],
+    ],
+    'webspark_blocks__asu_search' => [
+      'variables' => [
+        'form' => [],
+        'subtitle' => NULL,
+      ],
+    ],
+    'webspark_blocks__links' => [
+      'variables' => [
+        'links' => [],
+        'title' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function webspark_blocks_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form_ids = ['layout_builder_update_block', 'layout_builder_add_block'];
+
+  // Alter only the layout builder blocks.
+  if (!in_array($form_id, $form_ids)) {
+    return;
+  }
+
+  $form['settings']['block_form']['#process'][] = '_webspark_blocks_hero_block_form_alter';
+
+  if ($form_id == 'layout_builder_add_block' || $form_id == 'layout_builder_update_block') {
+    if(isset($form['settings']['block_form']['#block']) && $form['settings']['block_form']['#block']->get('type')->getValue()[0]['target_id'] ==  'card_arrangement') {
+      $field_definition = \Drupal::service('entity_field.manager')->getfieldDefinitions('block_content', 'card_arrangement')['field_card_arrangement_display'];
+      if ($field_definition) {
+        // Horizontal cards get their grid classes from the upstream Unity
+        // component, which ignores the columns prop, so only the value listed
+        // here stays selectable when the orientation is horizontal. Every other
+        // allowed value is removed by js/card-arrangement.js.
+        $horizontal_supported = ["''", 'two-columns'];
+        $column_values = [];
+        foreach ($field_definition->getSetting('allowed_values') as $key => $value) {
+          if (!in_array($key, $horizontal_supported, TRUE)) {
+            $column_values[] = [$key => $value];
+          }
+        }
+        $form['#attached']['drupalSettings']['columns_values'] = $column_values;
+      }
+    }
+  }
+}
+
+/**
+ * Process callback for hero custom block form.
+ */
+function _webspark_blocks_hero_block_form_alter(array $element, FormStateInterface $form_state) {
+  // Hide the text field in the small heros.
+  if (isset($element['field_hero_unformatted_text']) && isset($element['field_hero_size'])) {
+    $element['field_hero_unformatted_text']['#states'] = [
+      'invisible' => [
+        'select[name="settings[block_form][field_hero_size]"]' => ['value' => 'sm']
+     ]
+    ];
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function webspark_blocks_preprocess_page(&$variables)  {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  switch ($route_name) {
+    case 'system.404':
+      // Page Not Found.
+      _webspark_blocks_preprocess_page_404($variables);
+      break;
+  }
+}
+
+/**
+ * Private function to preprocess the 404 page.
+ */
+function _webspark_blocks_preprocess_page_404(&$variables) {
+
+  // Remove the default behaviour.
+  unset($variables['page']['content']['system_main']);
+  /* Hide error messages on 404 page for anonymous users. This is needed
+     because even when the site is configured not to display error messages,
+     for some reason they keep displaying on the 404 page. (WS2-1994) */
+  if ($variables['logged_in'] === false) {
+    unset($variables['page']['content']['messages']);
+  }
+  // Create a wrapper, so we can add classes here.
+  $wrapper = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => ['container', 'container-page-404'],
+    ],
+  ];
+  // Title for the 404 page.
+  $wrapper['title'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'h1',
+    '#value' => t('Hmm, we can\'t find that page'),
+  ];
+
+  // Get the search block.
+  $block_manager = \Drupal::service('plugin.manager.block');
+  $config = [];
+  $block_plugin = $block_manager->createInstance('webspark_asu_search_block', $config);
+  $wrapper['search'] = [
+    '#theme' => 'block', // Use block template.
+    '#plugin_id' => $block_plugin->getPluginId(),
+    '#base_plugin_id' => $block_plugin->getBaseId(),
+    '#derivative_plugin_id' => $block_plugin->getDerivativeId(),
+    '#configuration' => $block_plugin->getConfiguration(),
+    'content' => $block_plugin->build(),
+  ];
+
+
+  // Get the links, if they exist
+  $config = \Drupal::config('webspark_blocks.settings');
+  $links = $config->get('webspark_utility_links');
+
+  // loop through $links to find any non-empty values
+  // if we find any, we'll display the links
+  // if we don't find any, we'll skip displaying the links
+  if (is_array($links)) {
+    foreach ($links as $link) {
+      if (!empty($link['link_url']) && !empty($link['link_title'])) {
+        $has_links = TRUE;
+        if ($has_links) {
+          $wrapper['links'] = [
+            '#theme' => 'webspark_blocks__links',
+            '#title' => t('Here are some links you may find helpful'),
+            '#links' => $links,
+          ];
+        }
+        break;
+      }
+    }
+  }
+
+  $variables['page']['content']['page_404_content'] = $wrapper;
+
+}
+
+/**
+ * Implements hook_config_readonly_whitelist_patterns();
+ * Make all the config files from this module readonly.
+ * @return array
+ */
+function webspark_blocks_config_readonly_whitelist_patterns() {
+  // Get all the module configuration files.
+  $module = \Drupal::service('module_handler')
+      ->getModule(basename(__FILE__, '.module'))
+      ->getName();
+  $configs = \Drupal::service('asu_config.config_manager')->getModuleConfigFiles($module);
+  // Make fontawesome settings locked.
+  $configs[] = 'fontawesome.settings';
+  // Lock all the configurations from this module.
+  if (\Drupal::state()->get('configuration_locked', TRUE)) {
+    return array_map(function ($item) { return '~' . $item; }, $configs);
+  }
+  else {
+    return [];
+  }
+}
+
+/**
+ * Load the correct image size for Hover Cards.
+ *
+ * Implements hook_preprocess_paragraph().
+ *
+ * @param $variables
+ *
+ * @return void
+ */
+function webspark_blocks_preprocess_paragraph__hover_card(&$variables): void {
+  $media = $variables['content']['field_media'][0]['#media']->field_media_image->entity;
+  $variables['hoverCardImageUrl'] = ImageStyle::load('block_image_16_25_lge')->buildUrl($media->getFileUri());
+}

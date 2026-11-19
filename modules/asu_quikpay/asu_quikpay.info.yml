@@ -1,0 +1,7 @@
+name: ASU QuikPay
+type: module
+description: Provides Commerce integration for the QuikPay gateway.
+core_version_requirement: ^10 || ^11
+package: Commerce (contrib)
+dependencies:
+  - commerce:commerce_payment
